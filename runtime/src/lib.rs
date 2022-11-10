@@ -60,8 +60,9 @@ use pallet_transaction_payment::{ConstFeeMultiplier, CurrencyAdapter, Multiplier
 pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Permill};
 
-/// Import the storage and trex pallet.
+/// Import the TEE and TREX pallet.
 pub use pallet_trex;
+pub use pallet_tee;
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -243,9 +244,10 @@ impl pallet_grandpa::Config for Runtime {
 }
 
 impl pallet_timestamp::Config for Runtime {
-	/// A timestamp: milliseconds since the unix epoch.
+	/// A timestamp: milliseconds since the unix epoch. The blockchain generates timestamp for
+	/// blocks, TEE events, and TREX events.
 	type Moment = u64;
-	type OnTimestampSet = Aura;
+	type OnTimestampSet = (Aura, Tee);
 	type MinimumPeriod = ConstU64<{ SLOT_DURATION / 2 }>;
 	type WeightInfo = ();
 }
@@ -285,11 +287,23 @@ impl pallet_sudo::Config for Runtime {
 	type RuntimeCall = RuntimeCall;
 }
 
-/// Configure pallets.
+/// Configure custom pallets.
 
 impl pallet_trex::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type TREXWeight = pallet_trex::weights::SubstrateWeight<Runtime>;
+}
+
+parameter_types! {
+	pub const MomentsPerDay: u64 = 86_400_000; // [ms/d]
+	pub const MaxSilenceTime: u64 =172_800_000; // 48h
+}
+
+impl pallet_tee::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type Currency = pallet_balances::Pallet<Runtime>;
+	type MomentsPerDay = MomentsPerDay;
+	type MaxSilenceTime = MaxSilenceTime;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
@@ -309,7 +323,8 @@ construct_runtime!(
 		TransactionPayment: pallet_transaction_payment,
 		Sudo: pallet_sudo,
 		// Include the custom logic from local pallets in the runtime.
-		TREXModule: pallet_trex,
+		Trex: pallet_trex,
+		Tee: pallet_tee,
 	}
 );
 
@@ -356,7 +371,8 @@ mod benches {
 		[frame_system, SystemBench::<Runtime>]
 		[pallet_balances, Balances]
 		[pallet_timestamp, Timestamp]
-		[pallet_trex, TREXModule]
+		[pallet_trex, Trex]
+		[pallet_tee, Tee]
 	);
 }
 
