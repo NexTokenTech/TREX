@@ -1,7 +1,7 @@
 [workspace]
 members = [
     "node",
-    "pallets/template",
+    "pallets/trex",
     "runtime",
 ]
 [profile.release]
