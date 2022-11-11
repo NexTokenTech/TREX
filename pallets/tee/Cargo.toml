@@ -1,0 +1,72 @@
+[package]
+name = "pallet-tee"
+description = "The remote attestation registry and verification pallet for TREX blockchain and network"
+version = "0.1.0-dev"
+authors = ["NexToken Tech LLC <team@trex.ink>"]
+homepage = "https://trex.ink"
+repository = "https://github.com/NexTokenTech/TREX"
+license = "Apache-2.0"
+edition = "2021"
+
+[dependencies]
+codec = { version = "3.0.0", default-features = false, features = ["derive"], package = "parity-scale-codec" }
+log = { version = "0.4.14", default-features = false }
+scale-info = { version = "2.0.1", default-features = false, features = ["derive"] }
+
+# local
+ias-verify = { path = "./ias-verify", default-features = false }
+tee-primitives = { path = "../../primitives/tee", default-features = false }
+
+# substrate dependencies
+frame-support = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.30" }
+frame-system = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.30" }
+sp-core = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.30" }
+sp-io = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.30" }
+sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.30" }
+sp-std = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.30" }
+timestamp = { package = "pallet-timestamp", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.30" }
+
+# benchmarking
+frame-benchmarking = { default-features = false, optional = true, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.30" }
+hex-literal = { version = "0.3.2", optional = true }
+pallet-balances = { default-features = false, optional = true, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.30" }
+test-utils = { path = "./test-utils", default-features = false, optional = true }
+
+[dev-dependencies]
+env_logger = "0.9.0"
+externalities = { package = "sp-externalities", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.30" }
+frame-benchmarking = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.30" }
+hex-literal = "0.3.2"
+pallet-balances = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.30" }
+sp-keyring = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.30" }
+test-utils = { path = "./test-utils" }
+
+[features]
+default = ["std"]
+std = [
+    "codec/std",
+    "log/std",
+    "scale-info/std",
+    # local
+    "ias-verify/std",
+    "tee-primitives/std",
+    # substrate
+    "frame-support/std",
+    "frame-system/std",
+    "sp-core/std",
+    "sp-io/std",
+    "sp-runtime/std",
+    "sp-std/std",
+    "timestamp/std",
+]
+runtime-benchmarks = [
+    "frame-benchmarking",
+    "hex-literal",
+    "pallet-balances",
+    "test-utils",
+    "timestamp/runtime-benchmarks",
+]
+# allow workers to register without remote attestation for dev purposes
+skip-ias-check = []
+
+try-runtime = ["frame-support/try-runtime"]

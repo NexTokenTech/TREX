@@ -1,6 +1,7 @@
 # TREX
 
-A FRAME-based [Substrate](https://www.substrate.io/) node, ready for hacking :rocket:
+TREX is a project to develop a protocol and network to support permissionless & trustless 
+timed-release encryption in Web3. :rocket:
 
 ### Using Nix
 
@@ -24,6 +25,9 @@ cargo run --release -- --dev
 ```
 
 ### Build
+
+Note: The current code is built OK on Ubuntu 22.04 with current [rust toolchain](./rust-toolchain.toml).
+It has errors when linking with "rust-lld" on macOS 13.0.1.
 
 The `cargo run` command will perform an initial build. Use the following command to build the node
 without launching it:

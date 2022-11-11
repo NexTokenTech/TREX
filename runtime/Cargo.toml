@@ -49,12 +49,14 @@ frame-system-benchmarking = { version = "4.0.0-dev", default-features = false, g
 
 # Local Dependencies
 pallet-trex = { version = "0.1.0-dev", default-features = false, path = "../pallets/trex" }
+pallet-tee = { version = "0.1.0-dev", default-features = false, path = "../pallets/tee" }
 
 [build-dependencies]
 substrate-wasm-builder = { version = "5.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.30" }
 
 [features]
 default = ["std"]
+skip-ias-check = ["pallet-tee/skip-ias-check"]
 std = [
 	"frame-system-benchmarking/std",
 	"frame-benchmarking/std",
@@ -71,6 +73,7 @@ std = [
 	"pallet-randomness-collective-flip/std",
 	"pallet-sudo/std",
 	"pallet-trex/std",
+	"pallet-tee/std",
 	"pallet-timestamp/std",
 	"pallet-transaction-payment-rpc-runtime-api/std",
 	"pallet-transaction-payment/std",
@@ -94,6 +97,7 @@ runtime-benchmarks = [
 	"pallet-balances/runtime-benchmarks",
 	"pallet-grandpa/runtime-benchmarks",
 	"pallet-trex/runtime-benchmarks",
+	"pallet-tee/runtime-benchmarks",
 	"pallet-timestamp/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",
 ]
