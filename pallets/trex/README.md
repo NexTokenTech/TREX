@@ -1,6 +1,6 @@
 License: GPL-3.0-or-later
 ### Submit Extrinsic from Custom Pallets using subxt API
-First of all, you need to know what is Extrinsic. So, a piece of data that is bundled into a block in order to express something from the "external" (i.e. off-chain) world is called an extrinsic. So, before building the subxt API let us see how to make a dispatch call in your own custom pallet.
+First, you need to know what is Extrinsic. So, a piece of data that is bundled into a block in order to express something from the "external" (i.e. off-chain) world is called an extrinsic. So, before building the subxt API let us see how to make a dispatch call in your own custom pallet.
 
 ### Create a Dispatch call in your pallet
 A **dispatch call** is like a function that changes the state of the blockchain by changing the storage of your substrate chain. It fires an event to let all the other nodes know about the change in the blockchain state.
@@ -8,38 +8,6 @@ A **dispatch call** is like a function that changes the state of the blockchain 
 A **dispatch call** looks like this.
 
 Before this you also be ready for function weight defines in **weights.rs**
-
-``` rust
-#[pallet::call]
-impl<T: Config> Pallet<T>{
-	/// An example dispatchable that takes a singles value as a parameter, writes the value to
-	/// storage and emits an event. This function must be dispatched by a signed extrinsic.
-	/// #[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
-	#[pallet::weight(T::TREXWeight::send_trex_data())]
-	pub fn send_trex_data(origin: OriginFor<T>, _from: T::AccountId, message: Vec<u8>, release_block_height: u32) -> DispatchResult {
-		let who = ensure_signed(origin)?;
-	
-		//construct InfoData Struct for TREXStorage
-		let owner = who.clone();
-		let trex_message = message.clone();
-		let trex_data = TREXData::<T>{
-			release_block_height,
-			message:trex_message,
-			from:owner
-		};
-	
-		//encode InfoData instance to vec<u8>
-		let trex_byte_data = trex_data.encode();
-		// Update storage.
-		<TREXStorage<T>>::put(&trex_byte_data);
-	
-		// Emit an event.
-		Self::deposit_event(Event::TREXDataSent(who, trex_byte_data));
-		// Return a successful DispatchResultWithPostInfo
-		Ok(())
-	}
-}
-``` 
 
 The **#[pallet::call]** macro tells that the following implementation contains dispatch calls. The function **send trex data** is a dispatch call to submit a Extrinsic to the blockchain.
 

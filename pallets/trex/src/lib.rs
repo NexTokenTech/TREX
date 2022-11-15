@@ -78,6 +78,7 @@ pub mod pallet {
 	pub enum Error<T> {
 		/// Error names should be descriptive.
 		NoneValue,
+		// TODO: add overflow check.
 		/// Errors should have helpful documentation associated with them.
 		TREXInfoSentOverflow,
 	}
@@ -87,8 +88,10 @@ pub mod pallet {
 	#[scale_info(skip_type_params(T))]
 	#[codec(mel_bound())]
 	pub struct TREXData<T: Config> {
-		pub cipher_list: Vec<u8>,
+		pub cipher: Vec<u8>,
 		pub from: T::AccountId,
+		/// Each key piece contains a share of secret key and its destination node ID.
+		pub key_pieces: Vec<(T::AccountId, Vec<u8>)>,
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
@@ -103,7 +106,8 @@ pub mod pallet {
 		pub fn send_trex_data(
 			origin: OriginFor<T>,
 			_from: T::AccountId,
-			cipher_list: Vec<u8>,
+			cipher: Vec<u8>,
+			key_pieces: Vec<(T::AccountId, Vec<u8>)>,
 		) -> DispatchResult {
 			// Check that the extrinsic was signed and get the signer.
 			// This function will return an error if the extrinsic is not signed.
@@ -112,8 +116,7 @@ pub mod pallet {
 
 			//construct InfoData Struct for TREXStorage
 			let owner = who.clone();
-			let ciphers = cipher_list.clone();
-			let trex_data = TREXData::<T> { cipher_list: ciphers, from: owner };
+			let trex_data = TREXData::<T> { cipher, from: owner, key_pieces };
 
 			//encode InfoData instance to vec<u8>
 			let trex_byte_data = trex_data.encode();
