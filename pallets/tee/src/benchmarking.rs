@@ -22,24 +22,20 @@
 use super::*;
 
 use crate::Pallet as Tee;
-use frame_benchmarking::{account, benchmarks};
+use frame_benchmarking::benchmarks;
 use frame_system::RawOrigin;
 use sp_runtime::traits::CheckedConversion;
-use sp_std::vec;
 use test_utils::{
 	get_signer,
 	ias::{consts::*, setups::*},
 };
+use benchmarking_primitives::generate_accounts;
 
 fn ensure_not_skipping_ra_check() {
 	#[cfg(not(test))]
 	if cfg!(feature = "skip-ias-check") {
 		panic!("Benchmark does not allow the `skip-ias-check` flag.");
 	};
-}
-
-fn generate_accounts<T: Config>(amount: u32) -> Vec<T::AccountId> {
-	(0..amount).map(|n| account("dummy name", n, n)).collect()
 }
 
 fn add_enclaves_to_registry<T: Config>(accounts: &[T::AccountId]) {
@@ -94,25 +90,6 @@ benchmarks! {
 		assert!(!crate::EnclaveIndex::<T>::contains_key(&accounts[0]));
 		assert_eq!(Tee::<T>::enclave_count(), enclave_count as u64 - 1);
 	}
-
-	// Benchmark `call_worker`. There are no worst conditions. The benchmark showed that
-	// execution time is constant irrespective of cyphertext size.
-	call_worker {
-		let accounts: Vec<T::AccountId> = generate_accounts::<T>(1);
-		let req = Request { shard:H256::from_slice(&TEST4_SETUP.mrenclave), cyphertext: vec![1u8; 2000]};
-	}: _(RawOrigin::Signed(accounts[0].clone()), req)
-
-	// Benchmark `confirm_processed_parentchain_block` with the worst possible conditions:
-	// * sender enclave is registered
-	confirm_processed_parentchain_block {
-		let accounts: Vec<T::AccountId> = generate_accounts::<T>(1);
-		add_enclaves_to_registry::<T>(&accounts);
-
-		let block_hash: H256 = [2; 32].into();
-		let merkle_root: H256 = [4; 32].into();
-		let block_number: u32 = 0;
-
-	}: _(RawOrigin::Signed(accounts[0].clone()), block_hash, block_number.into(), merkle_root)
 }
 
 #[cfg(test)]

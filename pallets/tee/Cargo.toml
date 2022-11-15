@@ -16,6 +16,7 @@ scale-info = { version = "2.0.1", default-features = false, features = ["derive"
 # local
 ias-verify = { path = "./ias-verify", default-features = false }
 tee-primitives = { path = "../../primitives/tee", default-features = false }
+benchmarking-primitives = { default-features = false, path = "../../primitives/benchmarking"}
 
 # substrate dependencies
 frame-support = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.30" }
@@ -40,6 +41,7 @@ hex-literal = "0.3.2"
 pallet-balances = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.30" }
 sp-keyring = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.30" }
 test-utils = { path = "./test-utils" }
+benchmarking-primitives = { path = "../../primitives/benchmarking"}
 
 [features]
 default = ["std"]
@@ -50,6 +52,7 @@ std = [
     # local
     "ias-verify/std",
     "tee-primitives/std",
+    "benchmarking-primitives/std",
     # substrate
     "frame-support/std",
     "frame-system/std",

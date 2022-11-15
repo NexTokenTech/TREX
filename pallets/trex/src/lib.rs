@@ -23,6 +23,8 @@
 pub use pallet::*;
 pub mod weights;
 pub use weights::TREXWeight;
+use trex_primitives::{TREXData, KeyPiece};
+use sp_std::vec;
 
 // TODO: add supports for try-runtime test.
 
@@ -61,8 +63,8 @@ pub mod pallet {
 	// Learn more about declaring storage items:
 	// https://docs.substrate.io/v3/runtime/storage#declaring-storage-items
 	#[pallet::storage]
-	#[pallet::getter(fn something)]
-	pub type TREXStorage<T> = StorageValue<_, Vec<u8>>;
+	#[pallet::getter(fn trex_storage)]
+	pub type TREXStorage<T> = StorageValue<_, Vec<u8>, ValueQuery>;
 
 	// Pallets use events to inform users when important changes are made.
 	// https://docs.substrate.io/v3/runtime/events-and-errors
@@ -78,17 +80,9 @@ pub mod pallet {
 	pub enum Error<T> {
 		/// Error names should be descriptive.
 		NoneValue,
+		// TODO: add overflow check.
 		/// Errors should have helpful documentation associated with them.
 		TREXInfoSentOverflow,
-	}
-
-	// Struct for holding TREX information.
-	#[derive(Encode, Decode, Clone, PartialEq, Eq, Default, RuntimeDebug, TypeInfo)]
-	#[scale_info(skip_type_params(T))]
-	#[codec(mel_bound())]
-	pub struct TREXData<T: Config> {
-		pub cipher_list: Vec<u8>,
-		pub from: T::AccountId,
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
@@ -103,20 +97,21 @@ pub mod pallet {
 		pub fn send_trex_data(
 			origin: OriginFor<T>,
 			_from: T::AccountId,
-			cipher_list: Vec<u8>,
+			cipher: Vec<u8>,
+			key_pieces: Vec<KeyPiece<T::AccountId>>,
 		) -> DispatchResult {
 			// Check that the extrinsic was signed and get the signer.
 			// This function will return an error if the extrinsic is not signed.
 			// https://docs.substrate.io/v3/runtime/origins
 			let who = ensure_signed(origin)?;
 
-			//construct InfoData Struct for TREXStorage
+			// construct InfoData Struct for TREXStorage
 			let owner = who.clone();
-			let ciphers = cipher_list.clone();
-			let trex_data = TREXData::<T> { cipher_list: ciphers, from: owner };
+			let trex_data = TREXData::<T::AccountId> { cipher, from: owner, key_pieces };
 
 			//encode InfoData instance to vec<u8>
 			let trex_byte_data = trex_data.encode();
+			// TODO: remove duplicate data in storage and events, change corresponding benchmark.
 			// Update storage.
 			<TREXStorage<T>>::put(&trex_byte_data);
 
