@@ -3,18 +3,34 @@
 use super::*;
 
 #[allow(unused)]
-use crate::Pallet as Template;
-use frame_benchmarking::{benchmarks, whitelisted_caller};
+use crate::Pallet as Trex;
+// substrate
+use frame_benchmarking::{Vec, benchmarks, whitelisted_caller};
 use frame_system::RawOrigin;
+use codec::Encode;
+// local dependency
+use benchmarking_primitives::generate_accounts;
+use trex_primitives::{TREXData, KeyPiece, ShieldedKey};
 
-// TODO: make custom benchmark for trex pallet.
 benchmarks! {
-	send_predcit {
-		let s in vec![vec![1,2,3,4,5],vec![3,4,5,6,7]];
+	where_clause {  where T::AccountId: From<[u8; 32]> }
+	send_trex_data {
 		let caller: T::AccountId = whitelisted_caller();
-	}: _(RawOrigin::Signed(caller), s)
+		let accounts: Vec<T::AccountId> = generate_accounts::<T>(2);
+		let cipher = vec![1u8; 100];
+		let key: ShieldedKey = vec![1u8; 32];
+		let key_piece = KeyPiece{holder: accounts[1].clone(), shielded: key.clone()};
+		let key_pieces = vec![key_piece; 8];
+		let signed_caller = RawOrigin::Signed(caller);
+		// prepare test data
+		let test_data = TREXData::<T::AccountId> {
+			cipher: cipher.clone(),
+			from: accounts[0].clone(),
+			key_pieces: key_pieces.clone() };
+		let test_byte_data = test_data.encode();
+	}: _(signed_caller, accounts[0].clone(), cipher.clone(), key_pieces.clone())
 	verify {
-		assert_eq!(PredictStorage::<T>::get(), Some(s));
+		assert_eq!(Trex::<T>::trex_storage(), test_byte_data);
 	}
 
 	impl_benchmark_test_suite!(Template, crate::mock::new_test_ext(), crate::mock::Test);

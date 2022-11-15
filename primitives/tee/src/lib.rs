@@ -22,7 +22,7 @@ use sp_std::prelude::*;
 
 #[derive(Encode, Decode, Default, Copy, Clone, PartialEq, Eq, sp_core::RuntimeDebug, TypeInfo)]
 pub struct Enclave<PubKey, Url> {
-    pub pubkey: PubKey, // FIXME: this is redundant information
+    pub pubkey: PubKey, // The pubkey is the account ID for the enclave.
     pub mr_enclave: [u8; 32],
     // TODO: make timestamp: Moment
     pub timestamp: u64, // unix epoch in milliseconds
