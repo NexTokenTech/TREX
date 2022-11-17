@@ -21,23 +21,25 @@ use scale_info::TypeInfo;
 use sp_std::prelude::*;
 
 #[derive(Encode, Decode, Default, Copy, Clone, PartialEq, Eq, sp_core::RuntimeDebug, TypeInfo)]
-pub struct Enclave<PubKey, Url> {
-    pub pubkey: PubKey, // The pubkey is the account ID for the enclave.
-    pub mr_enclave: [u8; 32],
-    // TODO: make timestamp: Moment
-    pub timestamp: u64, // unix epoch in milliseconds
-    pub url: Url,       // utf8 encoded url
-    pub sgx_mode: SgxBuildMode,
+pub struct Enclave<PubKey, Url, ShieldingKey> {
+	pub pubkey: PubKey, // The pubkey is the account ID for the enclave.
+	pub mr_enclave: [u8; 32],
+	pub shielding_key: ShieldingKey,
+	// TODO: make timestamp: Moment
+	pub timestamp: u64, // unix epoch in milliseconds
+	pub url: Url,       // utf8 encoded url
+	pub sgx_mode: SgxBuildMode,
 }
 
-impl<PubKey, Url> Enclave<PubKey, Url> {
-    pub fn new(
-        pubkey: PubKey,
-        mr_enclave: [u8; 32],
-        timestamp: u64,
-        url: Url,
-        sgx_build_mode: SgxBuildMode,
-    ) -> Self {
-        Enclave { pubkey, mr_enclave, timestamp, url, sgx_mode: sgx_build_mode }
-    }
+impl<PubKey, Url,ShieldingKey> Enclave<PubKey, Url, ShieldingKey> {
+	pub fn new(
+		pubkey: PubKey,
+		mr_enclave: [u8; 32],
+		shielding_key: ShieldingKey,
+		timestamp: u64,
+		url: Url,
+		sgx_build_mode: SgxBuildMode,
+	) -> Self {
+		Enclave { pubkey, mr_enclave, shielding_key, timestamp, url, sgx_mode: sgx_build_mode }
+	}
 }

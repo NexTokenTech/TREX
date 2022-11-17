@@ -68,7 +68,7 @@ pub mod pallet {
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
-		AddedEnclave(T::AccountId, Vec<u8>),
+		AddedEnclave(T::AccountId, Vec<u8>, Vec<u8>),
 		RemovedEnclave(T::AccountId),
 		ShieldFunds(Vec<u8>),
 		UnshieldedFunds(T::AccountId),
@@ -79,7 +79,7 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn enclave)]
 	pub type EnclaveRegistry<T: Config> =
-		StorageMap<_, Blake2_128Concat, u64, Enclave<T::AccountId, Vec<u8>>, OptionQuery>;
+		StorageMap<_, Blake2_128Concat, u64, Enclave<T::AccountId, Vec<u8>,Vec<u8>>, OptionQuery>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn enclave_count)]
@@ -119,6 +119,7 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			ra_report: Vec<u8>,
 			worker_url: Vec<u8>,
+			shielding_key: Vec<u8>
 		) -> DispatchResultWithPostInfo {
 			log::info!("TREX: called into runtime call register_enclave()");
 			let sender = ensure_signed(origin)?;
@@ -151,13 +152,14 @@ pub mod pallet {
 				sender.clone(),
 				// insert mrenclave if the ra_report represents one, otherwise insert default
 				<[u8; 32]>::decode(&mut ra_report.as_slice()).unwrap_or_default(),
+				shielding_key.clone(),
 				<timestamp::Pallet<T>>::get().saturated_into(),
 				worker_url.clone(),
 				SgxBuildMode::default(),
 			);
 
 			Self::add_enclave(&sender, &enclave)?;
-			Self::deposit_event(Event::AddedEnclave(sender, worker_url));
+			Self::deposit_event(Event::AddedEnclave(sender, worker_url,shielding_key));
 			Ok(().into())
 		}
 
@@ -257,7 +259,7 @@ pub mod pallet {
 impl<T: Config> Pallet<T> {
 	pub fn add_enclave(
 		sender: &T::AccountId,
-		enclave: &Enclave<T::AccountId, Vec<u8>>,
+		enclave: &Enclave<T::AccountId, Vec<u8>,Vec<u8>>,
 	) -> DispatchResultWithPostInfo {
 		let enclave_idx = if <EnclaveIndex<T>>::contains_key(sender) {
 			log::info!("Updating already registered enclave");
