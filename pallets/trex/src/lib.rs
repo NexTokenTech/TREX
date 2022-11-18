@@ -72,7 +72,7 @@ pub mod pallet {
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
 		/// TREX Data Send Event
-		TREXDataSent(T::AccountId, Vec<u8>, T::Moment),
+		TREXDataSent(T::AccountId, Vec<u8>),
 	}
 
 	// Errors inform users that something went wrong.
@@ -87,15 +87,11 @@ pub mod pallet {
 
 	#[pallet::genesis_config]
 	#[cfg_attr(feature = "std", derive(Default))]
-	pub struct GenesisConfig {
-
-	}
+	pub struct GenesisConfig {}
 
 	#[pallet::genesis_build]
 	impl<T: Config> GenesisBuild<T> for GenesisConfig {
-		fn build(&self) {
-
-		}
+		fn build(&self) {}
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
@@ -130,7 +126,7 @@ pub mod pallet {
 			<TREXStorage<T>>::put(&trex_byte_data);
 
 			// Emit an event.
-			Self::deposit_event(Event::TREXDataSent(who, trex_byte_data, release_time));
+			Self::deposit_event(Event::TREXDataSent(who, trex_byte_data));
 			// Return a successful DispatchResultWithPostInfo
 			Ok(())
 		}
