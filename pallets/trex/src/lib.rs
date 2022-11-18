@@ -111,7 +111,7 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			cipher: Vec<u8>,
 			release_time: T::Moment,
-			key_pieces: Vec<u8>,
+			key_pieces: Vec<KeyPiece<T::AccountId>>,
 		) -> DispatchResult {
 			// Check that the extrinsic was signed and get the signer.
 			// This function will return an error if the extrinsic is not signed.
@@ -120,6 +120,7 @@ pub mod pallet {
 
 			// construct InfoData Struct for TREXStorage
 			let owner = who.clone();
+			// TODO: add current block number to trex_data
 			let trex_data = TREXData::<T::AccountId,T::Moment>{ cipher, from: owner, release_time,key_pieces };
 
 			//encode InfoData instance to vec<u8>

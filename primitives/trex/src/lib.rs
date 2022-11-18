@@ -41,5 +41,5 @@ pub struct TREXData<AccountID,Moment> {
 	pub from: AccountID,
 	pub release_time: Moment,
 	/// Each key piece contains a share of secret key and its destination node ID.
-	pub key_pieces: Vec<u8>,
+	pub key_pieces: Vec<KeyPiece<AccountID>>,
 }
