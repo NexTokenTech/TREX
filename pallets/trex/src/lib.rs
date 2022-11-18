@@ -46,7 +46,7 @@ pub mod pallet {
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
-	pub trait Config: frame_system::Config {
+	pub trait Config: frame_system::Config + timestamp::Config{
 		/// Because this pallet emits events, it depends on the runtime definition of an event.
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 
@@ -72,7 +72,7 @@ pub mod pallet {
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
 		/// TREX Data Send Event
-		TREXDataSent(T::AccountId, Vec<u8>),
+		TREXDataSent(T::AccountId, Vec<u8>, T::Moment),
 	}
 
 	// Errors inform users that something went wrong.
@@ -83,6 +83,19 @@ pub mod pallet {
 		// TODO: add overflow check.
 		/// Errors should have helpful documentation associated with them.
 		TREXInfoSentOverflow,
+	}
+
+	#[pallet::genesis_config]
+	#[cfg_attr(feature = "std", derive(Default))]
+	pub struct GenesisConfig {
+
+	}
+
+	#[pallet::genesis_build]
+	impl<T: Config> GenesisBuild<T> for GenesisConfig {
+		fn build(&self) {
+
+		}
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
@@ -96,9 +109,9 @@ pub mod pallet {
 		#[pallet::weight(T::TREXWeight::send_trex_data())]
 		pub fn send_trex_data(
 			origin: OriginFor<T>,
-			_from: T::AccountId,
 			cipher: Vec<u8>,
-			key_pieces: Vec<KeyPiece<T::AccountId>>,
+			release_time: T::Moment,
+			key_pieces: Vec<u8>,
 		) -> DispatchResult {
 			// Check that the extrinsic was signed and get the signer.
 			// This function will return an error if the extrinsic is not signed.
@@ -107,7 +120,7 @@ pub mod pallet {
 
 			// construct InfoData Struct for TREXStorage
 			let owner = who.clone();
-			let trex_data = TREXData::<T::AccountId> { cipher, from: owner, key_pieces };
+			let trex_data = TREXData::<T::AccountId,T::Moment>{ cipher, from: owner, release_time,key_pieces };
 
 			//encode InfoData instance to vec<u8>
 			let trex_byte_data = trex_data.encode();
@@ -116,7 +129,7 @@ pub mod pallet {
 			<TREXStorage<T>>::put(&trex_byte_data);
 
 			// Emit an event.
-			Self::deposit_event(Event::TREXDataSent(who, trex_byte_data));
+			Self::deposit_event(Event::TREXDataSent(who, trex_byte_data, release_time));
 			// Return a successful DispatchResultWithPostInfo
 			Ok(())
 		}

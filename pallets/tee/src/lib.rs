@@ -132,6 +132,7 @@ pub mod pallet {
 				Enclave::new(
 					sender.clone(),
 					report.mr_enclave,
+					shielding_key.clone(),
 					report.timestamp,
 					worker_url.clone(),
 					report.build_mode,
@@ -345,7 +346,10 @@ impl<T: Config> Pallet<T> {
 
 		let enclave_signer = T::AccountId::decode(&mut &report.pubkey[..])
 			.map_err(|_| <Error<T>>::EnclaveSignerDecodeError)?;
+		log::info!("Sender: {:?}",&sender);
+		log::info!("report sender: {:?}",enclave_signer);
 		ensure!(sender == &enclave_signer, <Error<T>>::SenderIsNotAttestedEnclave);
+		log::info!("Sender is Attested Enclave");
 
 		// TODO: activate state checks as soon as we've fixed our setup
 		// ensure!((report.status == SgxStatus::Ok) | (report.status == SgxStatus::ConfigurationNeeded),
@@ -364,6 +368,8 @@ impl<T: Config> Pallet<T> {
 			.checked_sub(&T::Moment::saturated_from(report_timestamp))
 			.ok_or("Underflow while calculating elapsed time since report creation")?;
 
+		log::info!("elapsed_time: {:?}",elapsed_time);
+		log::info!("T::MomentsPerDay::get(): {:?}",T::MomentsPerDay::get());
 		if elapsed_time < T::MomentsPerDay::get() {
 			Ok(().into())
 		} else {
