@@ -16,11 +16,21 @@
 //!Primitives for TREX
 #![cfg_attr(not(feature = "std"), no_std)]
 use codec::{Decode, Encode};
+use lazy_static::lazy_static;
 use scale_info::TypeInfo;
-use sp_std::prelude::*;
 use sp_core::RuntimeDebug;
+use sp_runtime::Perbill;
+use sp_std::prelude::*;
+use frame_system::limits::BlockLength;
 
 pub type ShieldedKey = Vec<u8>;
+
+const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
+
+lazy_static! {
+	/// Max size of TREX data in a block (block size).
+	pub static ref MAX_TREX_DATA: BlockLength = BlockLength::max_with_normal_ratio(5 * 1024 * 1024, NORMAL_DISPATCH_RATIO);
+}
 
 /// Struct for a piece of shielded key.
 #[derive(Encode, Decode, Clone, PartialEq, Eq, Default, RuntimeDebug, TypeInfo)]

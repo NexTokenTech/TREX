@@ -13,11 +13,14 @@ edition = "2021"
 codec = { version = "3.0.0", default-features = false, features = ["derive"], package = "parity-scale-codec" }
 scale-info = { version = "2.0.1", default-features = false, features = ["derive"] }
 serde = { version = "1.0.13", default-features = false }
+lazy_static = { version = "*", default-features = false, features = ["spin_no_std"] }
 
 # substrate dependencies
+frame-system = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.30" }
 sp-core = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.30" }
 sp-io = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.30" }
 sp-std = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.30" }
+sp-runtime = { version = "6.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.30" }
 
 [features]
 default = ["std"]
@@ -26,7 +29,9 @@ std = [
     "scale-info/std",
     "serde/std",
     # substrate
+    "frame-system/std",
     "sp-core/std",
     "sp-io/std",
     "sp-std/std",
+    "sp-runtime/std",
 ]

@@ -23,7 +23,7 @@
 pub use pallet::*;
 pub mod weights;
 pub use weights::TREXWeight;
-use trex_primitives::{TREXData, KeyPiece};
+use trex_primitives::{TREXData, KeyPiece, MAX_TREX_DATA};
 use sp_std::vec;
 
 // TODO: add supports for try-runtime test.
@@ -37,10 +37,13 @@ mod tests;
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
 
+pub type TREXSize = u32;
+
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
 	use frame_support::pallet_prelude::*;
+	use frame_support::dispatch::DispatchClass;
 	use frame_system::pallet_prelude::*;
 	use sp_std::vec::Vec;
 
@@ -72,7 +75,7 @@ pub mod pallet {
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
 		/// TREX Data Send Event
-		TREXDataSent(T::AccountId, Vec<u8>),
+		TREXDataSent(T::AccountId, Vec<u8>, TREXSize),
 	}
 
 	// Errors inform users that something went wrong.
@@ -127,12 +130,13 @@ pub mod pallet {
 
 			//encode InfoData instance to vec<u8>
 			let trex_byte_data = trex_data.encode();
+			let trex_data_size = trex_byte_data.len();
+			ensure!(trex_data_size < *MAX_TREX_DATA.max.get(DispatchClass::Normal) as usize, <Error<T>>::TREXInfoSentOverflow);
 			// TODO: remove duplicate data in storage and events, change corresponding benchmark.
 			// Update storage.
 			<TREXStorage<T>>::put(&trex_byte_data);
-
 			// Emit an event.
-			Self::deposit_event(Event::TREXDataSent(who, trex_byte_data));
+			Self::deposit_event(Event::TREXDataSent(who, trex_byte_data, trex_data_size as TREXSize));
 			// Return a successful DispatchResultWithPostInfo
 			Ok(())
 		}
