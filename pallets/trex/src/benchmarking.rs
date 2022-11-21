@@ -5,18 +5,17 @@ use super::*;
 #[allow(unused)]
 use crate::Pallet as Trex;
 // substrate
-use frame_benchmarking::{Vec, benchmarks, whitelisted_caller};
-use frame_system::RawOrigin;
 use codec::Encode;
+use frame_benchmarking::{benchmarks, whitelisted_caller, Vec};
+use frame_system::RawOrigin;
 // local dependency
 use benchmarking_primitives::generate_accounts;
-use trex_primitives::{TREXData, KeyPiece, ShieldedKey};
+use trex_primitives::{KeyPiece, ShieldedKey, TREXData};
 
 benchmarks! {
 	where_clause {  where T::AccountId: From<[u8; 32]> }
 	send_trex_data {
 		let caller: T::AccountId = whitelisted_caller();
-		let accounts: Vec<T::AccountId> = generate_accounts::<T>(2);
 		let cipher = vec![1u8; 100];
 		let key: ShieldedKey = vec![1u8; 32];
 		let key_piece = KeyPiece{holder: accounts[1].clone(), shielded: key.clone()};
@@ -28,7 +27,7 @@ benchmarks! {
 			from: accounts[0].clone(),
 			key_pieces: key_pieces.clone() };
 		let test_byte_data = test_data.encode();
-	}: _(signed_caller, accounts[0].clone(), cipher.clone(), key_pieces.clone())
+	}: _(signed_caller, cipher.clone(), key_pieces.clone())
 	verify {
 		assert_eq!(Trex::<T>::trex_storage(), test_byte_data);
 	}

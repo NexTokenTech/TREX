@@ -314,17 +314,17 @@ construct_runtime!(
 		NodeBlock = opaque::Block,
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
-		System: frame_system,
-		RandomnessCollectiveFlip: pallet_randomness_collective_flip,
-		Timestamp: pallet_timestamp,
-		Aura: pallet_aura,
-		Grandpa: pallet_grandpa,
-		Balances: pallet_balances,
-		TransactionPayment: pallet_transaction_payment,
-		Sudo: pallet_sudo,
+		System: frame_system::{Pallet, Call, Storage, Config, Event<T>} = 0,
+		RandomnessCollectiveFlip: pallet_randomness_collective_flip::{Pallet, Storage} = 1,
+		Timestamp: pallet_timestamp::{Pallet, Call, Storage, Inherent} = 2,
+		Aura: pallet_aura::{Pallet, Config<T>} = 3,
+		Grandpa: pallet_grandpa::{Pallet, Call, Storage, Config, Event} = 4,
+		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>} = 5,
+		TransactionPayment: pallet_transaction_payment::{Pallet, Storage, Event<T>} = 6,
+		Sudo: pallet_sudo::{Pallet, Call, Storage, Config<T>, Event<T>} = 7,
 		// Include the custom logic from local pallets in the runtime.
-		Trex: pallet_trex,
-		Tee: pallet_tee,
+		Trex: pallet_trex::{Pallet, Call, Config, Storage, Event<T>} = 8,
+		Tee: pallet_tee::{Pallet, Call, Config, Storage, Event<T>} = 9,
 	}
 );
 

@@ -46,7 +46,7 @@ pub mod pallet {
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
-	pub trait Config: frame_system::Config {
+	pub trait Config: frame_system::Config + timestamp::Config{
 		/// Because this pallet emits events, it depends on the runtime definition of an event.
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 
@@ -85,6 +85,15 @@ pub mod pallet {
 		TREXInfoSentOverflow,
 	}
 
+	#[pallet::genesis_config]
+	#[cfg_attr(feature = "std", derive(Default))]
+	pub struct GenesisConfig {}
+
+	#[pallet::genesis_build]
+	impl<T: Config> GenesisBuild<T> for GenesisConfig {
+		fn build(&self) {}
+	}
+
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
 	// These functions materialize as "extrinsics", which are often compared to transactions.
 	// Dispatchable functions must be annotated with a weight and must return a DispatchResult.
@@ -96,8 +105,8 @@ pub mod pallet {
 		#[pallet::weight(T::TREXWeight::send_trex_data())]
 		pub fn send_trex_data(
 			origin: OriginFor<T>,
-			_from: T::AccountId,
 			cipher: Vec<u8>,
+			release_time: T::Moment,
 			key_pieces: Vec<KeyPiece<T::AccountId>>,
 		) -> DispatchResult {
 			// Check that the extrinsic was signed and get the signer.
@@ -107,7 +116,8 @@ pub mod pallet {
 
 			// construct InfoData Struct for TREXStorage
 			let owner = who.clone();
-			let trex_data = TREXData::<T::AccountId> { cipher, from: owner, key_pieces };
+			// TODO: add current block number to trex_data
+			let trex_data = TREXData::<T::AccountId,T::Moment>{ cipher, from: owner, release_time,key_pieces };
 
 			//encode InfoData instance to vec<u8>
 			let trex_byte_data = trex_data.encode();

@@ -1,6 +1,6 @@
 use trex_runtime::{
 	AccountId, AuraConfig, BalancesConfig, GenesisConfig, GrandpaConfig, Signature, SudoConfig,
-	TeeConfig, SystemConfig, WASM_BINARY,
+	TeeConfig,TrexConfig, SystemConfig, WASM_BINARY,
 };
 use sc_service::ChainType;
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
@@ -151,7 +151,7 @@ fn testnet_genesis(
 			// Assign network admin rights.
 			key: Some(root_key),
 		},
-		transaction_payment: Default::default(),
 		tee: TeeConfig { allow_sgx_debug_mode: true },
+		trex: TrexConfig {}
 	}
 }

@@ -18,17 +18,18 @@
 use core::default::Default;
 use tee_primitives::Enclave;
 
-pub trait TestEnclave<AccountId, Url> {
-	fn test_enclave(pubkey: AccountId) -> Enclave<AccountId, Url>;
-	fn with_mr_enclave(self, mr_enclave: [u8; 32]) -> Enclave<AccountId, Url>;
-	fn with_timestamp(self, timestamp: u64) -> Enclave<AccountId, Url>;
-	fn with_url(self, url: Url) -> Enclave<AccountId, Url>;
+pub trait TestEnclave<AccountId, Url,ShieldingKey> {
+	fn test_enclave(pubkey: AccountId) -> Enclave<AccountId, Url, ShieldingKey>;
+	fn with_mr_enclave(self, mr_enclave: [u8; 32]) -> Enclave<AccountId, Url,ShieldingKey>;
+	fn with_timestamp(self, timestamp: u64) -> Enclave<AccountId, Url,ShieldingKey>;
+	fn with_url(self, url: Url) -> Enclave<AccountId, Url,ShieldingKey>;
 }
 
-impl<AccountId, Url: Default> TestEnclave<AccountId, Url> for Enclave<AccountId, Url> {
+impl<AccountId, Url: Default, ShieldingKey: Default> TestEnclave<AccountId, Url,ShieldingKey> for Enclave<AccountId, Url,ShieldingKey> {
 	fn test_enclave(pubkey: AccountId) -> Self {
 		Enclave::new(
 			pubkey,
+			Default::default(),
 			Default::default(),
 			Default::default(),
 			Default::default(),
