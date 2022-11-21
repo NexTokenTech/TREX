@@ -116,8 +116,14 @@ pub mod pallet {
 
 			// construct InfoData Struct for TREXStorage
 			let owner = who.clone();
-			// TODO: add current block number to trex_data
-			let trex_data = TREXData::<T::AccountId,T::Moment>{ cipher, from: owner, release_time,key_pieces };
+			let current_block_number = <frame_system::Pallet<T>>::block_number();
+			let trex_data = TREXData::<T::AccountId, T::Moment, T::BlockNumber>{
+				cipher,
+				from: owner,
+				release_time,
+				current_block: current_block_number,
+				key_pieces
+			};
 
 			//encode InfoData instance to vec<u8>
 			let trex_byte_data = trex_data.encode();

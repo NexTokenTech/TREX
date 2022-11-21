@@ -35,10 +35,11 @@ pub struct KeyPiece<AccountID> {
 #[derive(Encode, Decode, Clone, PartialEq, Eq, Default, RuntimeDebug, TypeInfo)]
 #[scale_info(skip_type_params(T))]
 #[codec(mel_bound())]
-pub struct TREXData<AccountID,Moment> {
+pub struct TREXData<AccountID, Moment, BlockNumber> {
 	pub cipher: Vec<u8>,
 	pub from: AccountID,
 	pub release_time: Moment,
+	pub current_block: BlockNumber,
 	/// Each key piece contains a share of secret key and its destination node ID.
 	pub key_pieces: Vec<KeyPiece<AccountID>>,
 }

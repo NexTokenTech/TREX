@@ -83,6 +83,9 @@ pub type Index = u32;
 /// A hash of some data used by the chain.
 pub type Hash = sp_core::H256;
 
+/// A unix epoch timestamp.
+pub type Moment = u64;
+
 /// Opaque types. These are used by the CLI to instantiate machinery that don't need to know
 /// the specifics of the runtime. They can then be made to be agnostic over specific formats
 /// of data like extrinsics, allowing for them to continue syncing the network through upgrades
@@ -246,7 +249,7 @@ impl pallet_grandpa::Config for Runtime {
 impl pallet_timestamp::Config for Runtime {
 	/// A timestamp: milliseconds since the unix epoch. The blockchain generates timestamp for
 	/// blocks, TEE events, and TREX events.
-	type Moment = u64;
+	type Moment = Moment;
 	type OnTimestampSet = (Aura, Tee);
 	type MinimumPeriod = ConstU64<{ SLOT_DURATION / 2 }>;
 	type WeightInfo = ();
