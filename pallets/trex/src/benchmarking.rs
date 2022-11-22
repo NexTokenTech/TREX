@@ -5,7 +5,6 @@ use super::*;
 #[allow(unused)]
 use crate::Pallet as Trex;
 // substrate
-use codec::Encode;
 use frame_benchmarking::{benchmarks, whitelisted_caller, Vec};
 use frame_system::RawOrigin;
 // local dependency
