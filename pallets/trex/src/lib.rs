@@ -37,8 +37,6 @@ mod tests;
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
 
-pub type TREXSize = u32;
-
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
@@ -75,7 +73,7 @@ pub mod pallet {
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
 		/// TREX Data Send Event
-		TREXDataSent(T::AccountId, Vec<u8>, TREXSize),
+		TREXDataSent(T::AccountId, Vec<u8>),
 	}
 
 	// Errors inform users that something went wrong.
@@ -136,7 +134,7 @@ pub mod pallet {
 			// Update storage.
 			<TREXStorage<T>>::put(&trex_byte_data);
 			// Emit an event.
-			Self::deposit_event(Event::TREXDataSent(who, trex_byte_data, trex_data_size as TREXSize));
+			Self::deposit_event(Event::TREXDataSent(who, trex_byte_data));
 			// Return a successful DispatchResultWithPostInfo
 			Ok(())
 		}
