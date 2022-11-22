@@ -23,7 +23,7 @@
 pub use pallet::*;
 pub mod weights;
 pub use weights::TREXWeight;
-use trex_primitives::{TREXData, KeyPiece};
+use trex_primitives::{TREXData, KeyPiece, MAX_TREX_DATA};
 use sp_std::vec;
 
 // TODO: add supports for try-runtime test.
@@ -41,6 +41,7 @@ mod benchmarking;
 pub mod pallet {
 	use super::*;
 	use frame_support::pallet_prelude::*;
+	use frame_support::dispatch::DispatchClass;
 	use frame_system::pallet_prelude::*;
 	use sp_std::vec::Vec;
 
@@ -116,15 +117,22 @@ pub mod pallet {
 
 			// construct InfoData Struct for TREXStorage
 			let owner = who.clone();
-			// TODO: add current block number to trex_data
-			let trex_data = TREXData::<T::AccountId,T::Moment>{ cipher, from: owner, release_time,key_pieces };
+			let current_block_number = <frame_system::Pallet<T>>::block_number();
+			let trex_data = TREXData::<T::AccountId, T::Moment, T::BlockNumber>{
+				cipher,
+				from: owner,
+				release_time,
+				current_block: current_block_number,
+				key_pieces
+			};
 
 			//encode InfoData instance to vec<u8>
 			let trex_byte_data = trex_data.encode();
+			let trex_data_size = trex_byte_data.len();
+			ensure!(trex_data_size < *MAX_TREX_DATA.max.get(DispatchClass::Normal) as usize, <Error<T>>::TREXInfoSentOverflow);
 			// TODO: remove duplicate data in storage and events, change corresponding benchmark.
 			// Update storage.
 			<TREXStorage<T>>::put(&trex_byte_data);
-
 			// Emit an event.
 			Self::deposit_event(Event::TREXDataSent(who, trex_byte_data));
 			// Return a successful DispatchResultWithPostInfo
