@@ -1,7 +1,7 @@
 [package]
 name = "trex-primitives"
 description = "Primitive data struct for timed-release encrytion (TREX)."
-version = "0.1.1"
+version = "0.1.0"
 authors = ["NexToken Tech LLC <team@trex.ink>"]
 homepage = "https://trex.ink"
 repository = "https://github.com/NexTokenTech/TREX"

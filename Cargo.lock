@@ -7931,7 +7931,7 @@ dependencies = [
 
 [[package]]
 name = "trex-primitives"
-version = "0.1.1"
+version = "0.1.0"
 dependencies = [
  "frame-system",
  "lazy_static",

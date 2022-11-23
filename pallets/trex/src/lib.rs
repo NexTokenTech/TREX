@@ -175,7 +175,7 @@ impl<T: Config> Pallet<T> {
 	pub fn is_registered_enclave(
 		account: &T::AccountId,
 	) -> Result<bool, DispatchErrorWithPostInfo> {
-		let v = T::EnclaveIndexStorage::contain_account(account);
+		let v = T::EnclaveIndexStorage::contains_account(account);
 		ensure!(v == true, <Error<T>>::EnclaveIsNotRegistered);
 		Ok(true)
 	}

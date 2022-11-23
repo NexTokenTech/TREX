@@ -390,7 +390,7 @@ impl<T: Config> OnTimestampSet<T::Moment> for Pallet<T> {
 impl<T: Config> TeeStorageInterface for Pallet<T> {
 	type Value = bool;
 	type AccountId = T::AccountId;
-	fn contain_account(sender:&AccountId<T>) -> Self::Value{
+	fn contains_account(sender:&AccountId<T>) -> Self::Value{
 		<EnclaveIndex<T>>::contains_key(&sender)
 	}
 }
