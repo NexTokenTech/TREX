@@ -17,14 +17,17 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
+use frame_support::dispatch::DispatchErrorWithPostInfo;
+use frame_support::ensure;
 /// Edit this file to define custom logic or remove it if it is not needed.
 /// Learn more about FRAME and the core library of Substrate FRAME pallets:
 /// <https://docs.substrate.io/v3/runtime/frame>
 pub use pallet::*;
 pub mod weights;
 pub use weights::TREXWeight;
-use trex_primitives::{TREXData, KeyPiece, MAX_TREX_DATA};
+use trex_primitives::{TREXData,TREXExpiredKey, KeyPiece, MAX_TREX_DATA};
 use sp_std::vec;
+use pallet_tee::TeeStorageInterface;
 
 // TODO: add supports for try-runtime test.
 
@@ -53,19 +56,13 @@ pub mod pallet {
 
 		/// Weight information for extrinsics in this pallet.
 		type TREXWeight: TREXWeight;
+
+		type EnclaveIndexStorage: TeeStorageInterface<Value = bool,AccountId = <Self as frame_system::Config>::AccountId>;
 	}
 
 	#[pallet::pallet]
 	#[pallet::without_storage_info]
 	pub struct Pallet<T>(PhantomData<T>);
-
-	// The pallet's runtime storage items.
-	// https://docs.substrate.io/v3/runtime/storage
-	// Learn more about declaring storage items:
-	// https://docs.substrate.io/v3/runtime/storage#declaring-storage-items
-	#[pallet::storage]
-	#[pallet::getter(fn trex_storage)]
-	pub type TREXStorage<T> = StorageValue<_, Vec<u8>, ValueQuery>;
 
 	// Pallets use events to inform users when important changes are made.
 	// https://docs.substrate.io/v3/runtime/events-and-errors
@@ -74,6 +71,7 @@ pub mod pallet {
 	pub enum Event<T: Config> {
 		/// TREX Data Send Event
 		TREXDataSent(T::AccountId, Vec<u8>),
+		TREXExpiredKeySent(T::AccountId, Vec<u8>),
 	}
 
 	// Errors inform users that something went wrong.
@@ -84,6 +82,7 @@ pub mod pallet {
 		// TODO: add overflow check.
 		/// Errors should have helpful documentation associated with them.
 		TREXInfoSentOverflow,
+		EnclaveIsNotRegistered
 	}
 
 	#[pallet::genesis_config]
@@ -130,13 +129,54 @@ pub mod pallet {
 			let trex_byte_data = trex_data.encode();
 			let trex_data_size = trex_byte_data.len();
 			ensure!(trex_data_size < *MAX_TREX_DATA.max.get(DispatchClass::Normal) as usize, <Error<T>>::TREXInfoSentOverflow);
-			// TODO: remove duplicate data in storage and events, change corresponding benchmark.
-			// Update storage.
-			<TREXStorage<T>>::put(&trex_byte_data);
+
 			// Emit an event.
 			Self::deposit_event(Event::TREXDataSent(who, trex_byte_data));
 			// Return a successful DispatchResultWithPostInfo
 			Ok(())
 		}
+
+		#[pallet::weight(T::TREXWeight::send_trex_data())]
+		pub fn send_expired_key(
+			origin: OriginFor<T>,
+			expired_key: Vec<u8>,
+			block_number: T::BlockNumber,
+			ext_index: T::BlockNumber,
+		) -> DispatchResultWithPostInfo {
+			// Check that the extrinsic was signed and get the signer.
+			// This function will return an error if the extrinsic is not signed.
+			// https://docs.substrate.io/v3/runtime/origins
+			let who = ensure_signed(origin)?;
+
+			Self::is_registered_enclave(&who)?;
+			// construct InfoData Struct for TREXStorage
+			let owner = who.clone();
+
+			let trex_expired_key = TREXExpiredKey::<T::AccountId, T::BlockNumber>{
+				expired_key,
+				from: owner,
+				block_number,
+				ext_index
+			};
+
+			//encode InfoData instance to vec<u8>
+			let trex_byte_expired_key = trex_expired_key.encode();
+			// Emit an event.
+			Self::deposit_event(Event::TREXExpiredKeySent(who, trex_byte_expired_key));
+			// Return a successful DispatchResultWithPostInfo
+
+			Ok(().into())
+		}
+	}
+}
+
+impl<T: Config> Pallet<T> {
+	/// Check if the sender is a registered enclave
+	pub fn is_registered_enclave(
+		account: &T::AccountId,
+	) -> Result<bool, DispatchErrorWithPostInfo> {
+		let v = T::EnclaveIndexStorage::contain_account(account);
+		ensure!(v == true, <Error<T>>::EnclaveIsNotRegistered);
+		Ok(true)
 	}
 }

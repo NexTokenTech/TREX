@@ -295,6 +295,7 @@ impl pallet_sudo::Config for Runtime {
 impl pallet_trex::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type TREXWeight = pallet_trex::weights::SubstrateWeight<Runtime>;
+	type EnclaveIndexStorage = Tee;
 }
 
 parameter_types! {

@@ -4260,6 +4260,7 @@ dependencies = [
  "frame-benchmarking",
  "frame-support",
  "frame-system",
+ "pallet-tee",
  "pallet-timestamp",
  "parity-scale-codec",
  "scale-info",
@@ -7930,7 +7931,7 @@ dependencies = [
 
 [[package]]
 name = "trex-primitives"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "frame-system",
  "lazy_static",

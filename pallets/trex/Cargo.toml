@@ -16,6 +16,7 @@ codec = { package = "parity-scale-codec", version = "3.0.0", default-features = 
 
 # local
 trex-primitives = { default-features = false, path = "../../primitives/trex"}
+pallet-tee = { default-features = false, path = "../tee"}
 benchmarking-primitives = { default-features = false, path = "../../primitives/benchmarking"}
 
 # substrate

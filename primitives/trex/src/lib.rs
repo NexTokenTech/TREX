@@ -53,3 +53,14 @@ pub struct TREXData<AccountID, Moment, BlockNumber> {
 	/// Each key piece contains a share of secret key and its destination node ID.
 	pub key_pieces: Vec<KeyPiece<AccountID>>,
 }
+
+/// Struct for holding TREX information.
+#[derive(Encode, Decode, Clone, PartialEq, Eq, Default, RuntimeDebug, TypeInfo)]
+#[scale_info(skip_type_params(T))]
+#[codec(mel_bound())]
+pub struct TREXExpiredKey<AccountID, BlockNumber> {
+	pub expired_key: Vec<u8>,
+	pub from: AccountID,
+	pub block_number: BlockNumber,
+	pub ext_index: BlockNumber
+}
