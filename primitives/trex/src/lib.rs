@@ -16,12 +16,12 @@
 //!Primitives for TREX
 #![cfg_attr(not(feature = "std"), no_std)]
 use codec::{Decode, Encode};
+use frame_system::limits::BlockLength;
 use lazy_static::lazy_static;
 use scale_info::TypeInfo;
 use sp_core::RuntimeDebug;
 use sp_runtime::Perbill;
 use sp_std::prelude::*;
-use frame_system::limits::BlockLength;
 
 pub type ShieldedKey = Vec<u8>;
 
@@ -52,4 +52,15 @@ pub struct TREXData<AccountID, Moment, BlockNumber> {
 	pub current_block: BlockNumber,
 	/// Each key piece contains a share of secret key and its destination node ID.
 	pub key_pieces: Vec<KeyPiece<AccountID>>,
+}
+
+/// Struct for holding TREX information.
+#[derive(Encode, Decode, Clone, PartialEq, Eq, Default, RuntimeDebug, TypeInfo)]
+#[scale_info(skip_type_params(T))]
+#[codec(mel_bound())]
+pub struct TREXExpiredKey<AccountID, BlockNumber> {
+	pub expired_key: Vec<u8>,
+	pub from: AccountID,
+	pub block_number: BlockNumber,
+	pub ext_index: BlockNumber,
 }

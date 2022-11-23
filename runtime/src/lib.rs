@@ -83,7 +83,7 @@ pub type Index = u32;
 /// A hash of some data used by the chain.
 pub type Hash = sp_core::H256;
 
-/// A unix epoch timestamp.
+/// A unix epoch timestamp. The default unit is millisecond.
 pub type Moment = u64;
 
 /// Opaque types. These are used by the CLI to instantiate machinery that don't need to know
@@ -295,6 +295,7 @@ impl pallet_sudo::Config for Runtime {
 impl pallet_trex::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type TREXWeight = pallet_trex::weights::SubstrateWeight<Runtime>;
+	type EnclaveIndexStorage = Tee;
 }
 
 parameter_types! {

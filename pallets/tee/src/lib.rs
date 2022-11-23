@@ -39,6 +39,9 @@ pub type AccountId<T> = <T as frame_system::Config>::AccountId;
 pub type BalanceOf<T> = <<T as Config>::Currency as Currency<AccountId<T>>>::Balance;
 
 pub use pallet::*;
+pub mod traits;
+pub use traits::TeeStorageInterface;
+
 
 const MAX_RA_REPORT_LEN: usize = 4096;
 const MAX_URL_LEN: usize = 256;
@@ -381,6 +384,14 @@ impl<T: Config> Pallet<T> {
 impl<T: Config> OnTimestampSet<T::Moment> for Pallet<T> {
 	fn on_timestamp_set(moment: T::Moment) {
 		Self::unregister_silent_workers(moment)
+	}
+}
+
+impl<T: Config> TeeStorageInterface for Pallet<T> {
+	type Value = bool;
+	type AccountId = T::AccountId;
+	fn contains_account(sender:&AccountId<T>) -> Self::Value{
+		<EnclaveIndex<T>>::contains_key(&sender)
 	}
 }
 

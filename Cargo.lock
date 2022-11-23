@@ -4260,6 +4260,7 @@ dependencies = [
  "frame-benchmarking",
  "frame-support",
  "frame-system",
+ "pallet-tee",
  "pallet-timestamp",
  "parity-scale-codec",
  "scale-info",
