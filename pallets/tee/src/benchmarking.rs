@@ -44,7 +44,7 @@ fn add_enclaves_to_registry<T: Config>(accounts: &[T::AccountId]) {
 			a,
 			&Enclave::test_enclave(a.clone()).with_mr_enclave(TEST4_SETUP.mrenclave),
 		)
-		.unwrap();
+			.unwrap();
 	}
 }
 
@@ -63,16 +63,17 @@ benchmarks! {
 		ensure_not_skipping_ra_check();
 		timestamp::Pallet::<T>::set_timestamp(TEST4_SETUP.timestamp.checked_into().unwrap());
 		let signer: T::AccountId = get_signer(TEST4_SETUP.signer_pub);
-
+		let key: Vec<u8> = vec![1u8; 32];
 		// simply register the enclave before to make sure it already
 		// exists when running the benchmark
 		Tee::<T>::register_enclave(
 			RawOrigin::Signed(signer.clone()).into(),
 			TEST4_SETUP.cert.to_vec(),
-			URL.to_vec()
+			URL.to_vec(),
+			key.clone()
 		).unwrap();
 
-	}: _(RawOrigin::Signed(signer), TEST4_SETUP.cert.to_vec(), URL.to_vec())
+	}: _(RawOrigin::Signed(signer), TEST4_SETUP.cert.to_vec(), URL.to_vec(), key)
 	verify {
 		assert_eq!(Tee::<T>::enclave_count(), 1);
 	}

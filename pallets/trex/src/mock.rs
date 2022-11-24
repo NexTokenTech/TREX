@@ -19,6 +19,7 @@ frame_support::construct_runtime!(
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
 		System: frame_system,
+		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
 		TREXModule: pallet_trex,
 	}
 );
@@ -41,7 +42,7 @@ impl system::Config for Test {
 	type BlockHashCount = ConstU64<250>;
 	type Version = ();
 	type PalletInfo = PalletInfo;
-	type AccountData = ();
+	type AccountData = pallet_balances::AccountData<Balance>;
 	type OnNewAccount = ();
 	type OnKilledAccount = ();
 	type SystemWeightInfo = ();
@@ -55,7 +56,31 @@ impl pallet_trex::Config for Test {
 	type TREXWeight = pallet_trex::weights::SubstrateWeight<Test>;
 }
 
+impl pallet_balances::Config for Test {
+	type MaxLocks = ();
+	type Balance = u64;
+	type DustRemoval = ();
+	type Event = Event;
+	type ExistentialDeposit = ExistentialDeposit;
+	type AccountStore = System;
+	type WeightInfo = ();
+	type MaxReserves = ();
+	type ReserveIdentifier = ();
+}
+
 // Build genesis storage according to the mock runtime.
 pub fn new_test_ext() -> sp_io::TestExternalities {
-	system::GenesisConfig::default().build_storage::<Test>().unwrap().into()
+	let t = system::GenesisConfig::default().build_storage::<Test>().unwrap();
+
+	pallet_balances::GenesisConfig::<Test> {
+		balances: vec![(AccountKeyring::Alice.to_account_id(), 1 << 60)],
+	}
+		.assimilate_storage(&mut t)
+		.unwrap();
+	let trex_config = crate::GenesisConfig {};
+	GenesisBuild::<Test>::assimilate_storage(&trex_config, &mut t).unwrap();
+
+	let mut ext: sp_io::TestExternalities = t.into();
+	ext.execute_with(|| System::set_block_number(1));
+	ext
 }

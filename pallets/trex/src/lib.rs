@@ -148,6 +148,7 @@ pub mod pallet {
 			// https://docs.substrate.io/v3/runtime/origins
 			let who = ensure_signed(origin)?;
 
+			#[cfg(not(feature = "runtime-benchmarks"))]
 			Self::is_registered_enclave(&who)?;
 			// construct InfoData Struct for TREXStorage
 			let owner = who.clone();
