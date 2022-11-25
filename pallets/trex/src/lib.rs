@@ -184,7 +184,7 @@ impl<T: Config> Pallet<T> {
 }
 
 impl<T: Config> OnTimestampSet<T::Moment> for Pallet<T> {
-	fn on_timestamp_set(moment: T::Moment) {
+	fn on_timestamp_set(_moment: T::Moment) {
 
 	}
 }
