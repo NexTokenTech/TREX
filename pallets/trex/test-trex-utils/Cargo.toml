@@ -1,0 +1,26 @@
+[package]
+name = "test-trex-utils"
+version = "0.1.0"
+description = "Pallet to send TREX data and generate corresponding events."
+authors = ["NexToken Technology LLC - TREX Dev Team <team@trex.ink>"]
+homepage = "https://trex.ink"
+edition = "2021"
+license = "Apache-2.0"
+repository = "https://github.com/NexTokenTech/Trex"
+
+[dependencies]
+hex-literal = { version = "0.3.2" }
+log = { version = "0.4.14", default-features = false }
+
+[dependencies.trex-primitives]
+default-features = false
+package = "trex-primitives"
+path = "../../../primitives/trex"
+
+
+[features]
+default = ['std']
+std = [
+    "log/std",
+    "trex-primitives/std",
+]

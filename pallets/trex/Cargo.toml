@@ -27,13 +27,20 @@ frame-system = { default-features = false, version = "4.0.0-dev", git = "https:/
 frame-benchmarking = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.30", optional = true }
 timestamp = { package = "pallet-timestamp", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.30" }
 
+test-trex-utils = { path = "./test-trex-utils", default-features = false, optional = true }
+
 [dev-dependencies]
 sp-core = { version = "6.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.30" }
 sp-io = { version = "6.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.30" }
 sp-runtime = { version = "6.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.30" }
+pallet-balances = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.30" }
+sp-keyring = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.30" }
+externalities = { package = "sp-externalities", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.30" }
 codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = ["derive", ] }
 benchmarking-primitives = { path = "../../primitives/benchmarking"}
 trex-primitives = { path = "../../primitives/trex"}
+test-trex-utils = { path = "./test-trex-utils" }
+pallet-tee = { default-features = false, path = "../tee"}
 
 [features]
 default = ["std"]
@@ -46,9 +53,11 @@ std = [
 	"sp-std/std",
 	"trex-primitives/std",
 	"benchmarking-primitives/std",
+	"pallet-tee/std"
 ]
 
 runtime-benchmarks = [
+	"test-trex-utils",
 	"frame-benchmarking/runtime-benchmarks",
 ]
 try-runtime = ["frame-support/try-runtime"]

@@ -16,8 +16,7 @@
 */
 
 use crate::{
-	mock::*, Enclave, EnclaveRegistry, Error, Event as TeeEvent, ExecutedCalls, Request,
-	ShardIdentifier,
+	mock::*, Enclave, EnclaveRegistry, Error, Event as TeeEvent, ExecutedCalls
 };
 use frame_support::{assert_err, assert_ok};
 use ias_verify::SgxBuildMode;
@@ -25,8 +24,8 @@ use sp_core::H256;
 use sp_keyring::AccountKeyring;
 use test_utils::ias::consts::*;
 
-fn list_enclaves() -> Vec<(u64, Enclave<AccountId, Vec<u8>>)> {
-	<EnclaveRegistry<Test>>::iter().collect::<Vec<(u64, Enclave<AccountId, Vec<u8>>)>>()
+fn list_enclaves() -> Vec<(u64, Enclave<AccountId, Vec<u8>, Vec<u8>>)> {
+	<EnclaveRegistry<Test>>::iter().collect::<Vec<(u64, Enclave<AccountId, Vec<u8>, Vec<u8>>)>>()
 }
 
 // give get_signer a concrete type
@@ -41,9 +40,10 @@ fn add_enclave_works() {
 		Timestamp::set_timestamp(TEST4_TIMESTAMP);
 		let signer = get_signer(TEST4_SIGNER_PUB);
 		assert_ok!(Tee::register_enclave(
-			Origin::signed(signer),
+			RuntimeOrigin::signed(signer),
 			TEST4_CERT.to_vec(),
-			URL.to_vec()
+			URL.to_vec(),
+			SHIELDING_KEY.to_vec()
 		));
 		assert_eq!(Tee::enclave_count(), 1);
 	})
@@ -56,12 +56,13 @@ fn add_and_remove_enclave_works() {
 		Timestamp::set_timestamp(TEST4_TIMESTAMP);
 		let signer = get_signer(TEST4_SIGNER_PUB);
 		assert_ok!(Tee::register_enclave(
-			Origin::signed(signer.clone()),
+			RuntimeOrigin::signed(signer.clone()),
 			TEST4_CERT.to_vec(),
-			URL.to_vec()
+			URL.to_vec(),
+			SHIELDING_KEY.to_vec()
 		));
 		assert_eq!(Tee::enclave_count(), 1);
-		assert_ok!(Tee::unregister_enclave(Origin::signed(signer)));
+		assert_ok!(Tee::unregister_enclave(RuntimeOrigin::signed(signer)));
 		assert_eq!(Tee::enclave_count(), 0);
 		assert_eq!(list_enclaves(), vec![])
 	})
@@ -72,17 +73,19 @@ fn list_enclaves_works() {
 	new_test_ext().execute_with(|| {
 		Timestamp::set_timestamp(TEST4_TIMESTAMP);
 		let signer = get_signer(TEST4_SIGNER_PUB);
-		let e_1: Enclave<AccountId, Vec<u8>> = Enclave {
+		let e_1: Enclave<AccountId, Vec<u8>, Vec<u8>> = Enclave {
 			pubkey: signer.clone(),
 			mr_enclave: TEST4_MRENCLAVE,
+			shielding_key: SHIELDING_KEY.to_vec(),
 			timestamp: TEST4_TIMESTAMP,
 			url: URL.to_vec(),
 			sgx_mode: SgxBuildMode::Debug,
 		};
 		assert_ok!(Tee::register_enclave(
-			Origin::signed(signer.clone()),
+			RuntimeOrigin::signed(signer.clone()),
 			TEST4_CERT.to_vec(),
 			URL.to_vec(),
+			SHIELDING_KEY.to_vec()
 		));
 		assert_eq!(Tee::enclave_count(), 1);
 		let enclaves = list_enclaves();
@@ -102,43 +105,48 @@ fn remove_middle_enclave_works() {
 		let signer7 = get_signer(TEST7_SIGNER_PUB);
 
 		// add enclave 1
-		let e_1: Enclave<AccountId, Vec<u8>> = Enclave {
+		let e_1: Enclave<AccountId, Vec<u8>,Vec<u8>> = Enclave {
 			pubkey: signer5.clone(),
 			mr_enclave: TEST5_MRENCLAVE,
+			shielding_key: SHIELDING_KEY.to_vec(),
 			timestamp: TEST5_TIMESTAMP,
 			url: URL.to_vec(),
 			sgx_mode: SgxBuildMode::Debug,
 		};
 
-		let e_2: Enclave<AccountId, Vec<u8>> = Enclave {
+		let e_2: Enclave<AccountId, Vec<u8>,Vec<u8>> = Enclave {
 			pubkey: signer6.clone(),
 			mr_enclave: TEST6_MRENCLAVE,
+			shielding_key: SHIELDING_KEY.to_vec(),
 			timestamp: TEST6_TIMESTAMP,
 			url: URL.to_vec(),
 			sgx_mode: SgxBuildMode::Debug,
 		};
 
-		let e_3: Enclave<AccountId, Vec<u8>> = Enclave {
+		let e_3: Enclave<AccountId, Vec<u8>,Vec<u8>> = Enclave {
 			pubkey: signer7.clone(),
 			mr_enclave: TEST7_MRENCLAVE,
+			shielding_key: SHIELDING_KEY.to_vec(),
 			timestamp: TEST7_TIMESTAMP,
 			url: URL.to_vec(),
 			sgx_mode: SgxBuildMode::Debug,
 		};
 
 		assert_ok!(Tee::register_enclave(
-			Origin::signed(signer5),
+			RuntimeOrigin::signed(signer5),
 			TEST5_CERT.to_vec(),
 			URL.to_vec(),
+			SHIELDING_KEY.to_vec(),
 		));
 		assert_eq!(Tee::enclave_count(), 1);
 		assert_eq!(list_enclaves(), vec![(1, e_1.clone())]);
 
 		// add enclave 2
 		assert_ok!(Tee::register_enclave(
-			Origin::signed(signer6.clone()),
+			RuntimeOrigin::signed(signer6.clone()),
 			TEST6_CERT.to_vec(),
 			URL.to_vec(),
+			SHIELDING_KEY.to_vec(),
 		));
 		assert_eq!(Tee::enclave_count(), 2);
 		let enclaves = list_enclaves();
@@ -147,9 +155,10 @@ fn remove_middle_enclave_works() {
 
 		// add enclave 3
 		assert_ok!(Tee::register_enclave(
-			Origin::signed(signer7),
+			RuntimeOrigin::signed(signer7),
 			TEST7_CERT.to_vec(),
 			URL.to_vec(),
+			SHIELDING_KEY.to_vec(),
 		));
 		assert_eq!(Tee::enclave_count(), 3);
 		let enclaves = list_enclaves();
@@ -158,7 +167,7 @@ fn remove_middle_enclave_works() {
 		assert!(enclaves.contains(&(3, e_3.clone())));
 
 		// remove enclave 2
-		assert_ok!(Tee::unregister_enclave(Origin::signed(signer6)));
+		assert_ok!(Tee::unregister_enclave(RuntimeOrigin::signed(signer6)));
 		assert_eq!(Tee::enclave_count(), 2);
 		let enclaves = list_enclaves();
 		assert!(enclaves.contains(&(1, e_1)));
@@ -171,7 +180,7 @@ fn register_enclave_with_different_signer_fails() {
 	new_test_ext().execute_with(|| {
 		let signer = get_signer(TEST7_SIGNER_PUB);
 		assert_err!(
-			Tee::register_enclave(Origin::signed(signer), TEST5_CERT.to_vec(), URL.to_vec()),
+			Tee::register_enclave(RuntimeOrigin::signed(signer), TEST5_CERT.to_vec(), URL.to_vec(),SHIELDING_KEY.to_vec()),
 			Error::<Test>::SenderIsNotAttestedEnclave
 		);
 	})
@@ -183,7 +192,7 @@ fn register_enclave_with_to_old_attestation_report_fails() {
 		Timestamp::set_timestamp(TEST7_TIMESTAMP + TWENTY_FOUR_HOURS + 1);
 		let signer = get_signer(TEST7_SIGNER_PUB);
 		assert_err!(
-			Tee::register_enclave(Origin::signed(signer), TEST7_CERT.to_vec(), URL.to_vec(),),
+			Tee::register_enclave(RuntimeOrigin::signed(signer), TEST7_CERT.to_vec(), URL.to_vec(),SHIELDING_KEY.to_vec(),),
 			Error::<Test>::RemoteAttestationTooOld
 		);
 	})
@@ -195,9 +204,10 @@ fn register_enclave_with_almost_too_old_report_works() {
 		Timestamp::set_timestamp(TEST7_TIMESTAMP + TWENTY_FOUR_HOURS - 1);
 		let signer = get_signer(TEST7_SIGNER_PUB);
 		assert_ok!(Tee::register_enclave(
-			Origin::signed(signer),
+			RuntimeOrigin::signed(signer),
 			TEST7_CERT.to_vec(),
 			URL.to_vec(),
+			SHIELDING_KEY.to_vec(),
 		));
 	})
 }
@@ -209,25 +219,28 @@ fn update_enclave_url_works() {
 
 		let signer = get_signer(TEST4_SIGNER_PUB);
 		let url2 = "my fancy url".as_bytes();
-		let _e_1: Enclave<AccountId, Vec<u8>> = Enclave {
+		let _e_1: Enclave<AccountId, Vec<u8>,Vec<u8>> = Enclave {
 			pubkey: signer.clone(),
 			mr_enclave: TEST4_MRENCLAVE,
+			shielding_key: SHIELDING_KEY.to_vec(),
 			timestamp: TEST4_TIMESTAMP,
 			url: url2.to_vec(),
 			sgx_mode: SgxBuildMode::Debug,
 		};
 
 		assert_ok!(Tee::register_enclave(
-			Origin::signed(signer.clone()),
+			RuntimeOrigin::signed(signer.clone()),
 			TEST4_CERT.to_vec(),
 			URL.to_vec(),
+			SHIELDING_KEY.to_vec(),
 		));
 		assert_eq!(Tee::enclave(1).unwrap().url, URL.to_vec());
 
 		assert_ok!(Tee::register_enclave(
-			Origin::signed(signer.clone()),
+			RuntimeOrigin::signed(signer.clone()),
 			TEST4_CERT.to_vec(),
 			url2.to_vec(),
+			SHIELDING_KEY.to_vec(),
 		));
 		assert_eq!(Tee::enclave(1).unwrap().url, url2.to_vec());
 		let enclaves = list_enclaves();
@@ -244,19 +257,20 @@ fn unshield_is_only_executed_once_for_the_same_call_hash() {
 		let bonding_account = get_signer(&TEST4_MRENCLAVE);
 
 		assert_ok!(Tee::register_enclave(
-			Origin::signed(signer.clone()),
+			RuntimeOrigin::signed(signer.clone()),
 			TEST4_CERT.to_vec(),
 			URL.to_vec(),
+			SHIELDING_KEY.to_vec(),
 		));
 
 		assert_ok!(Balances::transfer(
-			Origin::signed(AccountKeyring::Alice.to_account_id()),
+			RuntimeOrigin::signed(AccountKeyring::Alice.to_account_id()),
 			bonding_account.clone(),
 			1 << 50
 		));
 
 		assert!(Tee::unshield_funds(
-			Origin::signed(signer.clone()),
+			RuntimeOrigin::signed(signer.clone()),
 			AccountKeyring::Alice.to_account_id(),
 			50,
 			bonding_account.clone(),
@@ -265,7 +279,7 @@ fn unshield_is_only_executed_once_for_the_same_call_hash() {
 		.is_ok());
 
 		assert!(Tee::unshield_funds(
-			Origin::signed(signer),
+			RuntimeOrigin::signed(signer),
 			AccountKeyring::Alice.to_account_id(),
 			50,
 			bonding_account,
@@ -286,17 +300,19 @@ fn timestamp_callback_works() {
 		let signer7 = get_signer(TEST7_SIGNER_PUB);
 
 		// add enclave 1
-		let e_2: Enclave<AccountId, Vec<u8>> = Enclave {
+		let e_2: Enclave<AccountId, Vec<u8>, Vec<u8>> = Enclave {
 			pubkey: signer6.clone(),
 			mr_enclave: TEST6_MRENCLAVE,
+			shielding_key: SHIELDING_KEY.to_vec(),
 			timestamp: TEST6_TIMESTAMP,
 			url: URL.to_vec(),
 			sgx_mode: SgxBuildMode::Debug,
 		};
 
-		let e_3: Enclave<AccountId, Vec<u8>> = Enclave {
+		let e_3: Enclave<AccountId, Vec<u8>,Vec<u8>> = Enclave {
 			pubkey: signer7.clone(),
 			mr_enclave: TEST7_MRENCLAVE,
+			shielding_key: SHIELDING_KEY.to_vec(),
 			timestamp: TEST7_TIMESTAMP,
 			url: URL.to_vec(),
 			sgx_mode: SgxBuildMode::Debug,
@@ -304,19 +320,22 @@ fn timestamp_callback_works() {
 
 		//Register 3 enclaves: 5, 6 ,7
 		assert_ok!(Tee::register_enclave(
-			Origin::signed(signer5.clone()),
+			RuntimeOrigin::signed(signer5.clone()),
 			TEST5_CERT.to_vec(),
 			URL.to_vec(),
+			SHIELDING_KEY.to_vec(),
 		));
 		assert_ok!(Tee::register_enclave(
-			Origin::signed(signer6.clone()),
+			RuntimeOrigin::signed(signer6.clone()),
 			TEST6_CERT.to_vec(),
 			URL.to_vec(),
+			SHIELDING_KEY.to_vec(),
 		));
 		assert_ok!(Tee::register_enclave(
-			Origin::signed(signer7.clone()),
+			RuntimeOrigin::signed(signer7.clone()),
 			TEST7_CERT.to_vec(),
 			URL.to_vec(),
+			SHIELDING_KEY.to_vec(),
 		));
 		assert_eq!(Tee::enclave_count(), 3);
 
@@ -324,7 +343,7 @@ fn timestamp_callback_works() {
 		run_to_block(2);
 		set_timestamp(TEST5_TIMESTAMP + 2 * TWENTY_FOUR_HOURS + 1);
 
-		let expected_event = Event::Tee(TeeEvent::RemovedEnclave(signer5));
+		let expected_event = RuntimeEvent::Tee(TeeEvent::RemovedEnclave(signer5));
 		assert!(System::events().iter().any(|a| a.event == expected_event));
 		assert_eq!(Tee::enclave_count(), 2);
 		//2 and 3 are still there. 3 and 1 were swapped -> 3 and 2
@@ -338,15 +357,15 @@ fn timestamp_callback_works() {
 		assert_eq!(Tee::enclave_count(), 2);
 
 		//unregister 6 to generate an error next call of callbakc
-		assert_ok!(Tee::unregister_enclave(Origin::signed(signer6.clone())));
-		let expected_event = Event::Tee(TeeEvent::RemovedEnclave(signer6));
+		assert_ok!(Tee::unregister_enclave(RuntimeOrigin::signed(signer6.clone())));
+		let expected_event = RuntimeEvent::Tee(TeeEvent::RemovedEnclave(signer6));
 		assert!(System::events().iter().any(|a| a.event == expected_event));
 		assert_eq!(Tee::enclave_count(), 1);
 
 		//enclave 6 and 7 silent since TWENTY_FOUR_HOURS + 1 -> unregistered
 		run_to_block(4);
 		set_timestamp(TEST7_TIMESTAMP + 2 * TWENTY_FOUR_HOURS + 1);
-		let expected_event = Event::Tee(TeeEvent::RemovedEnclave(signer7));
+		let expected_event = RuntimeEvent::Tee(TeeEvent::RemovedEnclave(signer7));
 		assert!(System::events().iter().any(|a| a.event == expected_event));
 		assert_eq!(Tee::enclave_count(), 0);
 	})
@@ -357,9 +376,10 @@ fn debug_mode_enclave_attest_works_when_sgx_debug_mode_is_allowed() {
 	new_test_ext().execute_with(|| {
 		set_timestamp(TEST4_TIMESTAMP);
 		let signer4 = get_signer(TEST4_SIGNER_PUB);
-		let e_0: Enclave<AccountId, Vec<u8>> = Enclave {
+		let e_0: Enclave<AccountId, Vec<u8>,Vec<u8>> = Enclave {
 			pubkey: signer4.clone(),
 			mr_enclave: TEST4_MRENCLAVE,
+			shielding_key: SHIELDING_KEY.to_vec(),
 			timestamp: TEST4_TIMESTAMP,
 			url: URL.to_vec(),
 			sgx_mode: SgxBuildMode::Debug,
@@ -367,9 +387,10 @@ fn debug_mode_enclave_attest_works_when_sgx_debug_mode_is_allowed() {
 
 		//Register an enclave compiled in debug mode
 		assert_ok!(Tee::register_enclave(
-			Origin::signed(signer4),
+			RuntimeOrigin::signed(signer4),
 			TEST4_CERT.to_vec(),
 			URL.to_vec(),
+			SHIELDING_KEY.to_vec(),
 		));
 		assert_eq!(Tee::enclave_count(), 1);
 		let enclaves = list_enclaves();
@@ -383,9 +404,10 @@ fn production_mode_enclave_attest_works_when_sgx_debug_mode_is_allowed() {
 		new_test_ext().execute_with(|| {
 			set_timestamp(TEST8_TIMESTAMP);
 			let signer8 = get_signer(TEST8_SIGNER_PUB);
-			let e_0: Enclave<AccountId, Vec<u8>> = Enclave {
+			let e_0: Enclave<AccountId, Vec<u8>,Vec<u8>> = Enclave {
 				pubkey: signer8.clone(),
 				mr_enclave: TEST8_MRENCLAVE,
+				shielding_key: SHIELDING_KEY.to_vec(),
 				timestamp: TEST8_TIMESTAMP,
 				url: URL.to_vec(),
 				sgx_mode: SgxBuildMode::Production,
@@ -393,9 +415,10 @@ fn production_mode_enclave_attest_works_when_sgx_debug_mode_is_allowed() {
 
 			//Register an enclave compiled in production mode
 			assert_ok!(Tee::register_enclave(
-				Origin::signed(signer8),
+				RuntimeOrigin::signed(signer8),
 				TEST8_CERT.to_vec(),
 				URL.to_vec(),
+				SHIELDING_KEY.to_vec(),
 			));
 			assert_eq!(Tee::enclave_count(), 1);
 			let enclaves = list_enclaves();
@@ -411,7 +434,7 @@ fn debug_mode_enclave_attest_fails_when_sgx_debug_mode_not_allowed() {
 		let signer4 = get_signer(TEST4_SIGNER_PUB);
 		//Try to register an enclave compiled in debug mode
 		assert_err!(
-			Tee::register_enclave(Origin::signed(signer4), TEST4_CERT.to_vec(), URL.to_vec(),),
+			Tee::register_enclave(RuntimeOrigin::signed(signer4), TEST4_CERT.to_vec(), URL.to_vec(),SHIELDING_KEY.to_vec(),),
 			Error::<Test>::SgxModeNotAllowed
 		);
 		assert_eq!(Tee::enclave_count(), 0);
@@ -422,9 +445,10 @@ fn production_mode_enclave_attest_works_when_sgx_debug_mode_not_allowed() {
 	new_test_production_ext().execute_with(|| {
 		set_timestamp(TEST8_TIMESTAMP);
 		let signer8 = get_signer(TEST8_SIGNER_PUB);
-		let e_0: Enclave<AccountId, Vec<u8>> = Enclave {
+		let e_0: Enclave<AccountId, Vec<u8>,Vec<u8>> = Enclave {
 			pubkey: signer8.clone(),
 			mr_enclave: TEST8_MRENCLAVE,
+			shielding_key: SHIELDING_KEY.to_vec(),
 			timestamp: TEST8_TIMESTAMP,
 			url: URL.to_vec(),
 			sgx_mode: SgxBuildMode::Production,
@@ -432,9 +456,10 @@ fn production_mode_enclave_attest_works_when_sgx_debug_mode_not_allowed() {
 
 		//Register an enclave compiled in production mode
 		assert_ok!(Tee::register_enclave(
-			Origin::signed(signer8),
+			RuntimeOrigin::signed(signer8),
 			TEST8_CERT.to_vec(),
 			URL.to_vec(),
+			SHIELDING_KEY.to_vec(),
 		));
 		assert_eq!(Tee::enclave_count(), 1);
 		let enclaves = list_enclaves();
@@ -453,14 +478,15 @@ fn verify_unshield_funds_works() {
 
 		//Register enclave
 		assert_ok!(Tee::register_enclave(
-			Origin::signed(signer4.clone()),
+			RuntimeOrigin::signed(signer4.clone()),
 			TEST4_CERT.to_vec(),
 			URL.to_vec(),
+			SHIELDING_KEY.to_vec(),
 		));
 		assert_eq!(Tee::enclave_count(), 1);
 
 		assert!(Tee::shield_funds(
-			Origin::signed(AccountKeyring::Alice.to_account_id()),
+			RuntimeOrigin::signed(AccountKeyring::Alice.to_account_id()),
 			incognito_account.clone(),
 			100,
 			bonding_account.clone(),
@@ -469,11 +495,11 @@ fn verify_unshield_funds_works() {
 
 		assert_eq!(Balances::free_balance(bonding_account.clone()), 100);
 
-		let expected_event = Event::Tee(TeeEvent::ShieldFunds(incognito_account));
+		let expected_event = RuntimeEvent::Tee(TeeEvent::ShieldFunds(incognito_account));
 		assert!(System::events().iter().any(|a| a.event == expected_event));
 
 		assert!(Tee::unshield_funds(
-			Origin::signed(signer4),
+			RuntimeOrigin::signed(signer4),
 			AccountKeyring::Alice.to_account_id(),
 			50,
 			bonding_account.clone(),
@@ -483,7 +509,7 @@ fn verify_unshield_funds_works() {
 		assert_eq!(Balances::free_balance(bonding_account), 50);
 
 		let expected_event =
-			Event::Tee(TeeEvent::UnshieldedFunds(AccountKeyring::Alice.to_account_id()));
+			RuntimeEvent::Tee(TeeEvent::UnshieldedFunds(AccountKeyring::Alice.to_account_id()));
 		assert!(System::events().iter().any(|a| a.event == expected_event));
 	})
 }
@@ -499,7 +525,7 @@ fn unshield_funds_from_not_registered_enclave_errs() {
 
 		assert_err!(
 			Tee::unshield_funds(
-				Origin::signed(signer4.clone()),
+				RuntimeOrigin::signed(signer4.clone()),
 				AccountKeyring::Alice.to_account_id(),
 				51,
 				signer4,
@@ -522,14 +548,15 @@ fn unshield_funds_from_enclave_neq_bonding_account_errs() {
 
 		//Ensure that enclave is registered
 		assert_ok!(Tee::register_enclave(
-			Origin::signed(signer4.clone()),
+			RuntimeOrigin::signed(signer4.clone()),
 			TEST4_CERT.to_vec(),
 			URL.to_vec(),
+			SHIELDING_KEY.to_vec(),
 		));
 
 		//Ensure that bonding account has funds
 		assert!(Tee::shield_funds(
-			Origin::signed(AccountKeyring::Alice.to_account_id()),
+			RuntimeOrigin::signed(AccountKeyring::Alice.to_account_id()),
 			incognito_account.to_vec(),
 			100,
 			bonding_account.clone(),
@@ -537,7 +564,7 @@ fn unshield_funds_from_enclave_neq_bonding_account_errs() {
 		.is_ok());
 
 		assert!(Tee::shield_funds(
-			Origin::signed(AccountKeyring::Alice.to_account_id()),
+			RuntimeOrigin::signed(AccountKeyring::Alice.to_account_id()),
 			incognito_account.to_vec(),
 			50,
 			not_bonding_account.clone(),
@@ -546,7 +573,7 @@ fn unshield_funds_from_enclave_neq_bonding_account_errs() {
 
 		assert_err!(
 			Tee::unshield_funds(
-				Origin::signed(signer4),
+				RuntimeOrigin::signed(signer4),
 				AccountKeyring::Alice.to_account_id(),
 				50,
 				not_bonding_account.clone(),
@@ -570,9 +597,10 @@ fn verify_is_registered_enclave_works() {
 
 		//Ensure that enclave is registered
 		assert_ok!(Tee::register_enclave(
-			Origin::signed(signer4.clone()),
+			RuntimeOrigin::signed(signer4.clone()),
 			TEST4_CERT.to_vec(),
 			URL.to_vec(),
+			SHIELDING_KEY.to_vec(),
 		));
 		assert_ok!(Tee::is_registered_enclave(&signer4));
 		assert_err!(Tee::is_registered_enclave(&signer6), Error::<Test>::EnclaveIsNotRegistered);
