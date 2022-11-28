@@ -19,6 +19,7 @@
 
 use frame_support::dispatch::DispatchErrorWithPostInfo;
 use frame_support::ensure;
+use frame_support::traits::OnTimestampSet;
 /// Edit this file to define custom logic or remove it if it is not needed.
 /// Learn more about FRAME and the core library of Substrate FRAME pallets:
 /// <https://docs.substrate.io/v3/runtime/frame>
@@ -148,6 +149,7 @@ pub mod pallet {
 			// https://docs.substrate.io/v3/runtime/origins
 			let who = ensure_signed(origin)?;
 
+			#[cfg(not(feature = "runtime-benchmarks"))]
 			Self::is_registered_enclave(&who)?;
 			// construct InfoData Struct for TREXStorage
 			let owner = who.clone();
@@ -178,5 +180,11 @@ impl<T: Config> Pallet<T> {
 		let v = T::EnclaveIndexStorage::contains_account(account);
 		ensure!(v == true, <Error<T>>::EnclaveIsNotRegistered);
 		Ok(true)
+	}
+}
+
+impl<T: Config> OnTimestampSet<T::Moment> for Pallet<T> {
+	fn on_timestamp_set(_moment: T::Moment) {
+
 	}
 }

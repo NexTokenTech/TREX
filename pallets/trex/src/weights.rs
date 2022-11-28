@@ -17,10 +17,10 @@ pub struct SubstrateWeight<T>(PhantomData<T>);
 impl<T: frame_system::Config> TREXWeight for SubstrateWeight<T> {
     // Storage: System Account (r:1 w:1)
     fn send_trex_data() -> u64 {
-        70_952_000 + T::DbWeight::get().reads_writes(1,1).ref_time()
+        15_330_000 + T::DbWeight::get().reads_writes(0,0).ref_time()
     }
     fn send_expired_key() -> u64 {
-        70_952_000 + T::DbWeight::get().reads_writes(1,1).ref_time()
+        13_730_000 + T::DbWeight::get().reads_writes(0,0).ref_time()
     }
 }
 
@@ -28,9 +28,9 @@ impl<T: frame_system::Config> TREXWeight for SubstrateWeight<T> {
 impl TREXWeight for () {
     // Storage: System Account (r:1 w:1)
     fn send_trex_data() -> u64 {
-        70_952_000 + RocksDbWeight::get().reads_writes(1, 1).ref_time()
+        15_330_000 + RocksDbWeight::get().reads_writes(0, 0).ref_time()
     }
     fn send_expired_key() -> u64 {
-        70_952_000 + RocksDbWeight::get().reads_writes(1, 1).ref_time()
+        13_730_000 + RocksDbWeight::get().reads_writes(0, 0).ref_time()
     }
 }
