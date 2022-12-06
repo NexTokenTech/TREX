@@ -39,6 +39,7 @@ pub type AccountId<T> = <T as frame_system::Config>::AccountId;
 pub type BalanceOf<T> = <<T as Config>::Currency as Currency<AccountId<T>>>::Balance;
 
 pub use pallet::*;
+/// Provides a middleware interface for calling storage across pallets
 pub mod traits;
 pub use traits::TeeStorageInterface;
 
@@ -71,32 +72,42 @@ pub mod pallet {
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
+		/// add this enclave
 		AddedEnclave(T::AccountId, Vec<u8>, Vec<u8>),
+		/// removed this enclave
 		RemovedEnclave(T::AccountId),
+		/// Sent by a client who requests to get shielded funds managed by an enclave. For this on-chain balance is sent to the bonding_account of the enclave.
+		/// The bonding_account does not have a private key as the balance on this account is exclusively managed from withing the pallet_tee.
 		ShieldFunds(Vec<u8>),
+		/// Sent by enclaves only as a result of an `unshield` request from a client to an enclave.
 		UnshieldedFunds(T::AccountId),
 	}
 
 	// Watch out: we start indexing with 1 instead of zero in order to
 	// avoid ambiguity between Null and 0.
+	/// Enclave registry, used to check enclave information
 	#[pallet::storage]
 	#[pallet::getter(fn enclave)]
 	pub type EnclaveRegistry<T: Config> =
 		StorageMap<_, Blake2_128Concat, u64, Enclave<T::AccountId, Vec<u8>,Vec<u8>>, OptionQuery>;
 
+	/// The number of accounts in the enclave registry
 	#[pallet::storage]
 	#[pallet::getter(fn enclave_count)]
 	pub type EnclaveCount<T: Config> = StorageValue<_, u64, ValueQuery>;
 
+	/// The index corresponding to the enclave registry, used for updating and anti-checking operations
 	#[pallet::storage]
 	#[pallet::getter(fn enclave_index)]
 	pub type EnclaveIndex<T: Config> =
 		StorageMap<_, Blake2_128Concat, T::AccountId, u64, ValueQuery>;
 
+	/// confirmed calls from client to an enclave
 	#[pallet::storage]
 	#[pallet::getter(fn confirmed_calls)]
 	pub type ExecutedCalls<T: Config> = StorageMap<_, Blake2_128Concat, H256, u64, ValueQuery>;
 
+	/// Whether to allow sgx debug mode
 	#[pallet::storage]
 	#[pallet::getter(fn allow_sgx_debug_mode)]
 	pub type AllowSGXDebugMode<T: Config> = StorageValue<_, bool, ValueQuery>;
@@ -116,7 +127,7 @@ pub mod pallet {
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-		// the TEE-related service wants to register his enclave
+		/// the TEE-related service wants to register his enclave
 		#[pallet::weight(1_969_500_000 + T::DbWeight::get().reads_writes(2,1).ref_time())]
 		pub fn register_enclave(
 			origin: OriginFor<T>,
@@ -167,6 +178,7 @@ pub mod pallet {
 			Ok(().into())
 		}
 
+		/// the TEE-related service wants to unregister his enclave
 		#[pallet::weight(53_300_000 + T::DbWeight::get().reads_writes(3,5).ref_time())]
 		pub fn unregister_enclave(origin: OriginFor<T>) -> DispatchResultWithPostInfo {
 			let sender = ensure_signed(origin)?;

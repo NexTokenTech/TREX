@@ -23,6 +23,7 @@ use sp_core::RuntimeDebug;
 use sp_runtime::Perbill;
 use sp_std::prelude::*;
 
+/// Enclave encrypted private key
 pub type ShieldedKey = Vec<u8>;
 
 const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
@@ -46,21 +47,29 @@ pub struct KeyPiece<AccountID> {
 #[scale_info(skip_type_params(T))]
 #[codec(mel_bound())]
 pub struct TREXData<AccountID, Moment, BlockNumber> {
+	/// encrypted message
 	pub cipher: Vec<u8>,
+	/// The account that sent uxt
 	pub from: AccountID,
+	/// when to release
 	pub release_time: Moment,
+	/// The number of the block where uxt is located
 	pub current_block: BlockNumber,
 	/// Each key piece contains a share of secret key and its destination node ID.
 	pub key_pieces: Vec<KeyPiece<AccountID>>,
 }
 
-/// Struct for holding TREX information.
+/// Struct for holding TREX Expired Key.
 #[derive(Encode, Decode, Clone, PartialEq, Eq, Default, RuntimeDebug, TypeInfo)]
 #[scale_info(skip_type_params(T))]
 #[codec(mel_bound())]
 pub struct TREXExpiredKey<AccountID, BlockNumber> {
+	/// Expired private key
 	pub expired_key: Vec<u8>,
+	/// Account source
 	pub from: AccountID,
+	/// The height of the block pointed to by the private key
 	pub block_number: BlockNumber,
+	/// The ext index pointed to by the private key
 	pub ext_index: BlockNumber,
 }

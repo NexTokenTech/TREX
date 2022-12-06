@@ -24,6 +24,7 @@ use frame_support::traits::OnTimestampSet;
 /// Learn more about FRAME and the core library of Substrate FRAME pallets:
 /// <https://docs.substrate.io/v3/runtime/frame>
 pub use pallet::*;
+/// Uxt weight calculation
 pub mod weights;
 pub use weights::TREXWeight;
 use trex_primitives::{TREXData,TREXExpiredKey, KeyPiece, MAX_TREX_DATA};
@@ -58,6 +59,7 @@ pub mod pallet {
 		/// Weight information for extrinsics in this pallet.
 		type TREXWeight: TREXWeight;
 
+		/// An intermediary that calls storage across pallets
 		type EnclaveIndexStorage: TeeStorageInterface<Value = bool,AccountId = <Self as frame_system::Config>::AccountId>;
 	}
 
@@ -72,17 +74,18 @@ pub mod pallet {
 	pub enum Event<T: Config> {
 		/// TREX Data Send Event
 		TREXDataSent(T::AccountId, Vec<u8>),
+		/// TREX Expired Key Send Event
 		TREXExpiredKeySent(T::AccountId, Vec<u8>),
 	}
 
 	// Errors inform users that something went wrong.
 	#[pallet::error]
 	pub enum Error<T> {
-		/// Error names should be descriptive.
+		/// Undefined error
 		NoneValue,
-		// TODO: add overflow check.
-		/// Errors should have helpful documentation associated with them.
+		/// Overflow error type
 		TREXInfoSentOverflow,
+		/// The sending account is not in the enclave registry
 		EnclaveIsNotRegistered
 	}
 
@@ -100,9 +103,7 @@ pub mod pallet {
 	// Dispatchable functions must be annotated with a weight and must return a DispatchResult.
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-		/// An example dispatchable that takes a singles value as a parameter, writes the value to
-		/// storage and emits an event. This function must be dispatched by a signed extrinsic.
-		/// #[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
+		/// The method of sending encrypted information and the enclave encrypted key to the chain, and telling when to decrypt and release
 		#[pallet::weight(T::TREXWeight::send_trex_data())]
 		pub fn send_trex_data(
 			origin: OriginFor<T>,
@@ -137,6 +138,7 @@ pub mod pallet {
 			Ok(())
 		}
 
+		/// Send the expired decrypted private key to the chain and tell which ext of which block it points to
 		#[pallet::weight(T::TREXWeight::send_trex_data())]
 		pub fn send_expired_key(
 			origin: OriginFor<T>,

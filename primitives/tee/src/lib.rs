@@ -20,18 +20,27 @@ use ias_verify::SgxBuildMode;
 use scale_info::TypeInfo;
 use sp_std::prelude::*;
 
+/// Struct for holding Enclave Information.
 #[derive(Encode, Decode, Default, Copy, Clone, PartialEq, Eq, sp_core::RuntimeDebug, TypeInfo)]
 pub struct Enclave<PubKey, Url, ShieldingKey> {
-	pub pubkey: PubKey, // The pubkey is the account ID for the enclave.
+	/// The pubkey is the account ID for the enclave.
+	pub pubkey: PubKey,
+	/// mrenclave
 	pub mr_enclave: [u8; 32],
+	/// The shielding public key of the enclave, which is used by the client for encryption
 	pub shielding_key: ShieldingKey,
 	// TODO: make timestamp: Moment
+	/// Enclave update time
 	pub timestamp: u64, // unix epoch in milliseconds
+	/// Keyholder url
 	pub url: Url,       // utf8 encoded url
+	/// Enclave build mode
 	pub sgx_mode: SgxBuildMode,
 }
 
+/// Impl for holding Enclave Information.
 impl<PubKey, Url,ShieldingKey> Enclave<PubKey, Url, ShieldingKey> {
+	/// new method
 	pub fn new(
 		pubkey: PubKey,
 		mr_enclave: [u8; 32],

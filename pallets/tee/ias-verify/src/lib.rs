@@ -195,6 +195,7 @@ pub static IAS_SERVER_ROOTS: webpki::TLSServerTrustAnchors = webpki::TLSServerTr
 pub struct CertDer<'a>(&'a [u8]);
 
 // make sure this function doesn't panic!
+/// Verify the remote attestation report
 pub fn verify_ias_report(cert_der: &[u8]) -> Result<SgxReport, &'static str> {
 	// Before we reach here, the runtime already verified the extrinsic is properly signed by the extrinsic sender
 	// Hence, we skip: EphemeralKey::try_from(cert)?;
@@ -216,6 +217,7 @@ pub fn verify_ias_report(cert_der: &[u8]) -> Result<SgxReport, &'static str> {
 	parse_report(netscape.attestation_raw)
 }
 
+/// Parsing the remote attestation report
 fn parse_report(report_raw: &[u8]) -> Result<SgxReport, &'static str> {
 	// parse attestation report
 	let attn_report: Value = match serde_json::from_slice(report_raw) {
@@ -294,6 +296,7 @@ fn parse_report(report_raw: &[u8]) -> Result<SgxReport, &'static str> {
 	}
 }
 
+/// Verify signature
 pub fn verify_signature(
 	entity_cert: &webpki::EndEntityCert,
 	attestation_raw: &[u8],
@@ -316,7 +319,7 @@ pub fn verify_signature(
 		},
 	}
 }
-
+/// Verify server certificate
 pub fn verify_server_cert(
 	sig_cert: &webpki::EndEntityCert,
 	timestamp_valid_until: webpki::Time,
