@@ -21,7 +21,7 @@
 #LABEL description="trex builder."
 
 # ===== START FIRST STAGE ======
-FROM phusion/baseimage:focal-1.0.0 as builder
+FROM phusion/baseimage:jammy-1.0.0 as builder
 LABEL maintainer="team@trex.ink"
 LABEL description="trex builder."
 
@@ -32,7 +32,7 @@ COPY . /rustbuilder/trex
 
 # PREPARE OPERATING SYSTEM & BUILDING ENVIRONMENT
 RUN apt-get update && \
-	apt-get install -y pkg-config libssl-dev git clang libclang-dev diffutils gcc make m4 build-essential curl file cmake
+	apt-get install -y pkg-config libssl-dev git clang libclang-dev diffutils gcc make m4 build-essential curl file cmake protobuf-compiler libprotobuf-dev
 
 # UPDATE RUST DEPENDENCIES
 ENV RUSTUP_HOME "/rustbuilder/.rustup"
