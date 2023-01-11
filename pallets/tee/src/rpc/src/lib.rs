@@ -8,14 +8,14 @@ use sp_api::ProvideRuntimeApi;
 use sp_blockchain::HeaderBackend;
 use sp_runtime::{AccountId32, generic::BlockId, traits::Block as BlockT};
 use std::sync::Arc;
-use tee_primitives::EnclaveRpc;
+use tee_primitives::Enclave;
 
 #[rpc(client, server)]
 pub trait TeeApi<BlockHash> {
     #[method(name = "enclave_count")]
     fn enclave_count(&self, at: Option<BlockHash>) -> RpcResult<u32>;
     #[method(name = "enclave_select")]
-    fn enclave_select(&self, at: Option<BlockHash>,need_count:u64) -> RpcResult<Vec<EnclaveRpc<AccountId32,Vec<u8>,Vec<u8>>>>;
+    fn enclave_select(&self,need_count:u64) -> RpcResult<Vec<Enclave<AccountId32,Vec<u8>,Vec<u8>>>>;
 }
 
 /// A struct that implements the `TeeApi`.
@@ -46,21 +46,30 @@ impl<C, Block> TeeApiServer<<Block as BlockT>::Hash> for TeePallet<C, Block>
         api.enclave_count(&at).map_err(runtime_error_into_rpc_err)
     }
 
-    fn enclave_select(&self, at: Option<<Block as BlockT>::Hash>,need_count:u64) -> RpcResult<Vec<EnclaveRpc<AccountId32,Vec<u8>,Vec<u8>>>> {
+    fn enclave_select(&self, need_count:u64) -> RpcResult<Vec<Enclave<AccountId32,Vec<u8>,Vec<u8>>>> {
         let api = self.client.runtime_api();
-        let at = BlockId::hash(at.unwrap_or_else(||self.client.info().best_hash));
+        let at = BlockId::hash(self.client.info().best_hash);
 
-        api.enclave_select(&at,need_count).map_err(runtime_error_into_rpc_err)
+        api.enclave_select(&at,need_count).map_err(not_enough_enclave_error_into_rpc_err)
     }
 }
 
 const RUNTIME_ERROR: i32 = 1;
-
+const NOT_ENOUGH_ENCLAVE_ERROR: i32 = 2;
 /// Converts a runtime trap into an RPC error.
 fn runtime_error_into_rpc_err(err: impl std::fmt::Debug) -> JsonRpseeError {
     CallError::Custom(ErrorObject::owned(
         RUNTIME_ERROR,
         "Runtime error",
+        Some(format!("{:?}", err)),
+    ))
+        .into()
+}
+
+fn not_enough_enclave_error_into_rpc_err(err: impl std::fmt::Debug) -> JsonRpseeError {
+    CallError::Custom(ErrorObject::owned(
+        NOT_ENOUGH_ENCLAVE_ERROR,
+        "Not enough enclave accounts",
         Some(format!("{:?}", err)),
     ))
         .into()

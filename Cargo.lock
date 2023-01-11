@@ -2431,6 +2431,7 @@ dependencies = [
  "hex-literal",
  "parity-scale-codec",
  "scale-info",
+ "serde",
  "serde_json",
  "sp-core",
  "sp-io",

@@ -66,7 +66,7 @@ pub use sp_runtime::{Perbill, Permill};
 pub use pallet_tee;
 /// Import the TEE and TREX pallet.
 pub use pallet_trex;
-pub use tee_primitives::EnclaveRpc;
+pub use tee_primitives::Enclave;
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -391,7 +391,7 @@ impl_runtime_apis! {
 			Tee::enclave_count().try_into().unwrap()
 		}
 
-		fn enclave_select(need_count:u64) -> Vec<EnclaveRpc<AccountId32,Vec<u8>,Vec<u8>>>{
+		fn enclave_select(need_count:u64) -> Vec<Enclave<AccountId32,Vec<u8>,Vec<u8>>>{
 			Tee::enclave_select(need_count)
 		}
 	}

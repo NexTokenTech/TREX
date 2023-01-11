@@ -41,7 +41,6 @@ pub type BalanceOf<T> = <<T as Config>::Currency as Currency<AccountId<T>>>::Bal
 pub use pallet::*;
 pub mod traits;
 pub use traits::TeeStorageInterface;
-use sp_runtime::AccountId32;
 // use rand::Rng;
 
 const MAX_RA_REPORT_LEN: usize = 4096;
@@ -382,15 +381,15 @@ impl<T: Config> Pallet<T> {
 	}
 }
 
-impl<T:Config> Pallet<T> where AccountId32: From<<T as frame_system::Config>::AccountId>{
-	pub fn enclave_select(need_count:u64) -> Vec<EnclaveRpc<AccountId32,Vec<u8>,Vec<u8>>>{
+impl<T:Config> Pallet<T> {
+	pub fn enclave_select(need_count:u64) -> Vec<Enclave<T::AccountId,Vec<u8>,Vec<u8>>>{
 		let enclave_count = <EnclaveCount<T>>::get();
 		if enclave_count == 0 {
 			return vec![];
 		}
 		// let mut rng = rand::thread_rng();
 		// let mut rand_vec:Vec<u64> = vec![];
-		let mut account_vec:Vec<EnclaveRpc<AccountId32,Vec<u8>,Vec<u8>>> = vec![];
+		let mut account_vec:Vec<Enclave<T::AccountId,Vec<u8>,Vec<u8>>> = vec![];
 		if need_count <= enclave_count {
 			for rand_enclave_index in 1..need_count+1{
 				// let mut rand_enclave_index = rng.gen_range(1..enclave_count+1);
@@ -398,14 +397,7 @@ impl<T:Config> Pallet<T> where AccountId32: From<<T as frame_system::Config>::Ac
 				// 	rand_enclave_index = rng.gen_range(1..enclave_count+1);
 				// }
 				let enclave_account = <EnclaveRegistry<T>>::get(rand_enclave_index).unwrap();
-				let enclave_account_rpc = EnclaveRpc::new(
-					enclave_account.pubkey.into(),
-					enclave_account.mr_enclave,
-					enclave_account.shielding_key,
-					enclave_account.timestamp,
-					enclave_account.url
-				);
-				account_vec.push(enclave_account_rpc);
+				account_vec.push(enclave_account);
 				// rand_vec.push(rand_enclave_index);
 			}
 		}
