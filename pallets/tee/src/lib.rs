@@ -41,7 +41,7 @@ pub type BalanceOf<T> = <<T as Config>::Currency as Currency<AccountId<T>>>::Bal
 pub use pallet::*;
 pub mod traits;
 pub use traits::TeeStorageInterface;
-// use rand::Rng;
+use nanorand::{Rng,WyRand};
 
 const MAX_RA_REPORT_LEN: usize = 4096;
 const MAX_URL_LEN: usize = 256;
@@ -257,6 +257,8 @@ pub mod pallet {
 		RaReportTooLong,
 		/// No enclave is registered.
 		EmptyEnclaveRegistry,
+		/// No enough enclave account is registered.
+		NotEnoughEnclaveRegistry
 	}
 }
 
@@ -387,18 +389,18 @@ impl<T:Config> Pallet<T> {
 		if enclave_count == 0 {
 			return vec![];
 		}
-		// let mut rng = rand::thread_rng();
-		// let mut rand_vec:Vec<u64> = vec![];
+		let mut rng = WyRand::new();
+		let mut rand_vec:Vec<u64> = vec![];
 		let mut account_vec:Vec<Enclave<T::AccountId,Vec<u8>,Vec<u8>>> = vec![];
 		if need_count <= enclave_count {
-			for rand_enclave_index in 1..need_count+1{
-				// let mut rand_enclave_index = rng.gen_range(1..enclave_count+1);
-				// while rand_vec.contains(&rand_enclave_index) {
-				// 	rand_enclave_index = rng.gen_range(1..enclave_count+1);
-				// }
+			for _ in 0..need_count{
+				let mut rand_enclave_index = rng.generate_range(1..enclave_count+1);
+				while rand_vec.contains(&rand_enclave_index) {
+					rand_enclave_index = rng.generate_range(1..enclave_count+1);
+				}
 				let enclave_account = <EnclaveRegistry<T>>::get(rand_enclave_index).unwrap();
 				account_vec.push(enclave_account);
-				// rand_vec.push(rand_enclave_index);
+				rand_vec.push(rand_enclave_index);
 			}
 		}
 		return account_vec;
