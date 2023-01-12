@@ -26,6 +26,7 @@ use sp_std::{
 	convert::{TryFrom, TryInto},
 	prelude::*,
 };
+use serde::{Deserialize, Serialize};
 
 mod ephemeral_key;
 mod netscape_comment;
@@ -98,7 +99,7 @@ pub struct SgxQuote {
 	                    //signature: [u8; 64]    /* 436 */  //must be hard-coded for SCALE codec
 }
 
-#[derive(Encode, Decode, Copy, Clone, PartialEq, Eq, sp_core::RuntimeDebug, TypeInfo)]
+#[derive(Encode, Decode, Copy, Clone, PartialEq, Eq, sp_core::RuntimeDebug, TypeInfo,Deserialize,Serialize)]
 pub enum SgxBuildMode {
 	Debug,
 	Production,

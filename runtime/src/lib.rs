@@ -26,7 +26,10 @@ use pallet_grandpa::{
 };
 use sp_api::impl_runtime_apis;
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
-use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
+use sp_core::{
+	crypto::{AccountId32, KeyTypeId},
+	OpaqueMetadata,
+};
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
 	traits::{
@@ -60,9 +63,10 @@ use pallet_transaction_payment::{ConstFeeMultiplier, CurrencyAdapter, Multiplier
 pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Permill};
 
+pub use pallet_tee;
 /// Import the TEE and TREX pallet.
 pub use pallet_trex;
-pub use pallet_tee;
+pub use tee_primitives::Enclave;
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -381,6 +385,17 @@ mod benches {
 }
 
 impl_runtime_apis! {
+	impl pallet_tee_runtime_api::TeeApi<Block> for Runtime
+	{
+		fn enclave_count() -> u32 {
+			Tee::enclave_count().try_into().unwrap()
+		}
+
+		fn enclave_select(need_count:u64) -> Vec<Enclave<AccountId32,Vec<u8>,Vec<u8>>>{
+			Tee::enclave_select(need_count)
+		}
+	}
+
 	impl sp_api::Core<Block> for Runtime {
 		fn version() -> RuntimeVersion {
 			VERSION

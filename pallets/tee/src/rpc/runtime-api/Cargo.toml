@@ -1,0 +1,27 @@
+[package]
+name = "pallet-tee-runtime-api"
+description = ""
+version = "1.0.0"
+authors = ["NexToken Tech LLC <team@trex.ink>"]
+homepage = "https://trex.ink"
+repository = "https://github.com/NexTokenTech/TREX"
+license = "Apache-2.0"
+edition = "2021"
+
+[package.metadata.docs.rs]
+targets = ["x86_64-unknown-linux-gnu"]
+
+[dependencies]
+sp-api = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.30", default-features = false }
+tee-primitives = { path = "../../../../../primitives/tee", default-features = false }
+sp-std = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.30" }
+sp-runtime = { default-features = false, version = "6.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.30" }
+
+[features]
+default = ["std"]
+std = [
+    "sp-api/std",
+    "sp-std/std",
+    "tee-primitives/std",
+    "sp-runtime/std"
+]
