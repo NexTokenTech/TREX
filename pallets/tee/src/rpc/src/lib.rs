@@ -50,26 +50,40 @@ impl<C, Block> TeeApiServer<<Block as BlockT>::Hash> for TeePallet<C, Block>
         let api = self.client.runtime_api();
         let at = BlockId::hash(self.client.info().best_hash);
 
-        api.enclave_select(&at,need_count).map_err(not_enough_enclave_error_into_rpc_err)
+        let enclave_count = api.enclave_count(&at).unwrap_or(0u32);
+        let res = api.enclave_select(&at,need_count).unwrap_or(vec![]);
+        return if res.len() == 0 {
+            if enclave_count == 0 {
+                Err(CallError::Custom(ErrorObject::owned(
+                    RpcErrorType::NoEnclaveIsInRegistry as i32,
+                    "No enclave is registered",
+                    Some(""),
+                )).into())
+            }else{
+                Err(CallError::Custom(ErrorObject::owned(
+                    RpcErrorType::NotEnoughEnclaveError as i32,
+                    "Not enough enclave accounts",
+                    Some(""),
+                )).into())
+            }
+
+        } else {
+            Ok(res)
+        };
     }
 }
 
-const RUNTIME_ERROR: i32 = 1;
-const NOT_ENOUGH_ENCLAVE_ERROR: i32 = 2;
+enum RpcErrorType {
+    RuntimeError = 1,
+    NotEnoughEnclaveError = 2,
+    NoEnclaveIsInRegistry = 3
+}
+
 /// Converts a runtime trap into an RPC error.
 fn runtime_error_into_rpc_err(err: impl std::fmt::Debug) -> JsonRpseeError {
     CallError::Custom(ErrorObject::owned(
-        RUNTIME_ERROR,
+        RpcErrorType::RuntimeError as i32,
         "Runtime error",
-        Some(format!("{:?}", err)),
-    ))
-        .into()
-}
-
-fn not_enough_enclave_error_into_rpc_err(err: impl std::fmt::Debug) -> JsonRpseeError {
-    CallError::Custom(ErrorObject::owned(
-        NOT_ENOUGH_ENCLAVE_ERROR,
-        "Not enough enclave accounts",
         Some(format!("{:?}", err)),
     ))
         .into()
