@@ -19,8 +19,9 @@ use codec::{Decode, Encode};
 use ias_verify::SgxBuildMode;
 use scale_info::TypeInfo;
 use sp_std::prelude::*;
+use serde::{Deserialize, Serialize};
 
-#[derive(Encode, Decode, Default, Copy, Clone, PartialEq, Eq, sp_core::RuntimeDebug, TypeInfo)]
+#[derive(Encode, Decode, Default, Copy, Clone, PartialEq, Eq, sp_core::RuntimeDebug, TypeInfo,Serialize, Deserialize)]
 pub struct Enclave<PubKey, Url, ShieldingKey> {
 	pub pubkey: PubKey, // The pubkey is the account ID for the enclave.
 	pub mr_enclave: [u8; 32],
