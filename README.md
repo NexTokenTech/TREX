@@ -44,6 +44,11 @@ subcommands:
 ```sh
 ./target/release/trex -h
 ```
+## Test
+All core functions are covered by unit tests. To test the core functions, simply run
+```shell
+cargo test
+```
 
 ## Run
 
@@ -114,30 +119,30 @@ local TREX node.
 If you want to see the multi-node consensus algorithm in action, refer to our
 [Simulate a network tutorial](https://docs.substrate.io/tutorials/get-started/simulate-network/).
 
-## Template Structure
+## TREX Node Project Structure
 
-A Substrate project such as this consists of a number of components that are spread across a few
+The TREX project consists of a number of components that are spread across a few
 directories.
 
 ### Node
 
-A blockchain node is an application that allows users to participate in a blockchain network.
-Substrate-based blockchain nodes expose a number of capabilities:
+A TREX node is an application that allows users to participate in a blockchain network.
+The TREX blockchain nodes expose a number of capabilities:
 
-- Networking: Substrate nodes use the [`libp2p`](https://libp2p.io/) networking stack to allow the
+- Networking: TREX nodes use the [`libp2p`](https://libp2p.io/) networking stack to allow the
   nodes in the network to communicate with one another.
-- Consensus: Blockchains must have a way to come to
-  [consensus](https://docs.substrate.io/main-docs/fundamentals/consensus/) on the state of the
-  network. Substrate makes it possible to supply custom consensus engines and also ships with
-  several consensus mechanisms that have been built on top of
+- Consensus: The TREX network uses [Aura](https://docs.substrate.io/reference/glossary/#authority-round-aura) algorithm 
+for authoring blocks and the [GRANDPA](https://paritytech.github.io/substrate/master/sc_finality_grandpa/index.html) 
+algorithm for block finalization that have been built on top of
   [Web3 Foundation research](https://research.web3.foundation/en/latest/polkadot/NPoS/index.html).
-- RPC Server: A remote procedure call (RPC) server is used to interact with Substrate nodes.
+- RPC Server: A remote procedure call (RPC) server is used to interact with TREX nodes.
+The frontend applications will also use RPC calls to access key-holder data for threshold encryption.
 
 There are several files in the `node` directory - take special note of the following:
 
 - [`chain_spec.rs`](./node/src/chain_spec.rs): A
   [chain specification](https://docs.substrate.io/main-docs/build/chain-spec/) is a
-  source code file that defines a Substrate chain's initial (genesis) state. Chain specifications
+  source code file that defines a TREX blockchain's initial (genesis) state. Chain specifications
   are useful for development and testing, and critical when architecting the launch of a
   production chain. Take note of the `development_config` and `testnet_genesis` functions, which
   are used to define the genesis state for the local development chain configuration. These
@@ -160,10 +165,9 @@ capabilities and configuration parameters that it exposes:
 
 ### Runtime
 
-In Substrate, the terms
-"runtime" and "state transition function"
+In TREX network, the terms "runtime" and "state transition function"
 are analogous - they refer to the core logic of the blockchain that is responsible for validating
-blocks and executing the state changes they define. The Substrate project in this repository uses
+blocks and executing the state changes they define. The TREX project in this repository uses
 [FRAME](https://docs.substrate.io/main-docs/fundamentals/runtime-intro/#frame) to construct a
 blockchain runtime. FRAME allows runtime developers to declare domain-specific logic in modules
 called "pallets". At the heart of FRAME is a helpful
@@ -171,7 +175,7 @@ called "pallets". At the heart of FRAME is a helpful
 create pallets and flexibly compose them to create blockchains that can address
 [a variety of needs](https://substrate.io/ecosystem/projects/).
 
-Review the [FRAME runtime implementation](./runtime/src/lib.rs) included in this template and note
+Review the [FRAME runtime implementation](./runtime/src/lib.rs) included in this project and note
 the following:
 
 - This file configures several pallets to include in the runtime. Each pallet configuration is
@@ -184,22 +188,28 @@ the following:
 ### Pallets
 
 The runtime in this project is constructed using many FRAME pallets that ship with the
-[core Substrate repository](https://github.com/paritytech/substrate/tree/master/frame) and a
-template pallet that is [defined in the `pallets`](./pallets/template/src/lib.rs) directory.
+[core Substrate repository](https://github.com/paritytech/substrate/tree/master/frame)
 
-A FRAME pallet is compromised of a number of blockchain primitives:
+We also create two specific pallets for the TREX network and its off-chain workers.
+#### TEE Pallet
+This pallet is responsible for verification of remote attestation from off-chain workers, which are also called as 
+key-holders in the TREX network.
 
-- Storage: FRAME defines a rich set of powerful
-  [storage abstractions](https://docs.substrate.io/main-docs/build/runtime-storage/) that makes
-  it easy to use Substrate's efficient key-value database to manage the evolving state of a
-  blockchain.
-- Dispatchables: FRAME pallets define special types of functions that can be invoked (dispatched)
-  from outside of the runtime in order to update its state.
-- Events: Substrate uses [events and errors](https://docs.substrate.io/main-docs/build/events-errors/)
-  to notify users of important changes in the runtime.
-- Errors: When a dispatchable fails, it returns an error.
-- Config: The `Config` configuration interface is used to define the types and parameters upon
-  which a FRAME pallet depends.
+- Storage: The on-chain storage keeps the verification status of each off-chain worker and its RSA public key for shielding
+ the data communication between nodes and off-chain workers.
+- Dispatchables: Runtime APIs to register, unregister an off-chain worker with Intel SGX enclaves, and query the status 
+of off-chain workers.
+- Events: A event is emitted when an off-chain worker is registered or unregistered.
+- Errors: When registration of a new key-holder fails, it returns an error.
+
+#### TREX Pallet
+This pallet supports the core functionality of the TREX network - decentralized timed-release encryption.
+
+- Dispatchables: Runtime APIs to send encrypted data with shielded key pieces and decrypt data with key pieces released 
+from off-chain workers.
+- Events: A event is emitted when encrypted data were sent to the blockchain and the key-holder will handle the event 
+and hold corresponding keys in the enclave.
+- Errors: When sending TREX data fails, it returns an error.
 
 ### Run in Docker
 
@@ -215,10 +225,10 @@ Then run the following command to start a single node development chain.
 This command will firstly compile your code, and then start a local development network. You can
 also replace the default command
 (`cargo build --release && ./target/release/trex --dev --ws-external`)
-by appending your own. A few useful ones are as follow.
+by appending your own. A few useful ones are as follows.
 
 ```bash
-# Run Substrate node without re-compiling
+# Run TREX node without re-compiling
 ./scripts/docker_run.sh ./target/release/trex --dev --ws-external
 
 # Purge the local dev chain
