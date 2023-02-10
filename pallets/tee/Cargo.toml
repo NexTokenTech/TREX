@@ -2,7 +2,7 @@
 name = "pallet-tee"
 description = "The remote attestation registry and verification pallet for TREX blockchain and network"
 version = "0.1.0-dev"
-authors = ["NexToken Tech LLC <team@trex.ink>"]
+authors = ["NexToken Tech LLC <team@trex.ink> and Integritee AG <hello@integritee.network>"]
 homepage = "https://trex.ink"
 repository = "https://github.com/NexTokenTech/TREX"
 license = "Apache-2.0"
