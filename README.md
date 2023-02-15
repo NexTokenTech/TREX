@@ -32,9 +32,14 @@ It has errors when linking with "rust-lld" on macOS 13.0.1.
 The `cargo run` command will perform an initial build. Use the following command to build the node
 without launching it:
 
-```sh
-cargo build --release
-```
+- If you can perform Remote Attestation:
+  ```
+  cargo build --release
+  ```
+- If you can **NOT** perform Remote Attestation:
+  ```
+  cargo build --release --features "skip-ias-check"
+  ```
 
 ### Embedded Docs
 
