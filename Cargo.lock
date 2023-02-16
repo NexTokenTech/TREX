@@ -2431,7 +2431,6 @@ dependencies = [
  "hex-literal",
  "parity-scale-codec",
  "scale-info",
- "serde",
  "serde_json",
  "sp-core",
  "sp-io",
@@ -3828,12 +3827,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "nanorand"
-version = "0.7.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6a51313c5820b0b02bd422f4b44776fbf47961755c74ce64afc73bfad10226c3"
-
-[[package]]
 name = "netlink-packet-core"
 version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4185,7 +4178,6 @@ dependencies = [
  "hex-literal",
  "ias-verify",
  "log",
- "nanorand",
  "pallet-balances",
  "pallet-timestamp",
  "parity-scale-codec",
@@ -4198,29 +4190,6 @@ dependencies = [
  "sp-std",
  "tee-primitives",
  "test-utils",
-]
-
-[[package]]
-name = "pallet-tee-rpc"
-version = "1.0.0"
-dependencies = [
- "jsonrpsee",
- "pallet-tee-runtime-api",
- "parity-scale-codec",
- "sp-api",
- "sp-blockchain",
- "sp-runtime",
- "tee-primitives",
-]
-
-[[package]]
-name = "pallet-tee-runtime-api"
-version = "1.0.0"
-dependencies = [
- "sp-api",
- "sp-runtime",
- "sp-std",
- "tee-primitives",
 ]
 
 [[package]]
@@ -7940,7 +7909,6 @@ dependencies = [
  "frame-benchmarking-cli",
  "frame-system",
  "jsonrpsee",
- "pallet-tee-rpc",
  "pallet-transaction-payment",
  "pallet-transaction-payment-rpc",
  "sc-basic-authorship",
@@ -8006,7 +7974,6 @@ dependencies = [
  "pallet-randomness-collective-flip",
  "pallet-sudo",
  "pallet-tee",
- "pallet-tee-runtime-api",
  "pallet-timestamp",
  "pallet-transaction-payment",
  "pallet-transaction-payment-rpc-runtime-api",
@@ -8025,7 +7992,6 @@ dependencies = [
  "sp-transaction-pool",
  "sp-version",
  "substrate-wasm-builder",
- "tee-primitives",
 ]
 
 [[package]]
