@@ -23,6 +23,7 @@ FROM phusion/baseimage:jammy-1.0.0 as builder
 LABEL maintainer="team@trex.ink"
 LABEL description="trex builder."
 
+ARG FEATURES=""
 ARG PROFILE=release
 ARG STABLE=nightly
 WORKDIR /rustbuilder
@@ -43,7 +44,7 @@ RUN rustup update $STABLE --no-self-update
 
 # BUILD RUNTIME AND BINARY
 RUN rustup target add wasm32-unknown-unknown --toolchain $STABLE
-RUN cd /rustbuilder/trex && RUSTC_BOOTSTRAP=1 cargo +nightly build --$PROFILE --features "skip-ias-check" --locked
+RUN cd /rustbuilder/trex && RUSTC_BOOTSTRAP=1 cargo +nightly build --$PROFILE --features $FEATURES --locked
 # ===== END FIRST STAGE ======
 
 # ===== START SECOND STAGE ======
