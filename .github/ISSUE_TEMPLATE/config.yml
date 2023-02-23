@@ -10,3 +10,7 @@ contact_links:
     about: |
       This template is generated on tagged releases upstream, it is not independently updated and maintained.
       Please direct all suggestions for improvements and PRs upstream.
+  - name: Issues for the TREX network
+    url: https://github.com/NexTokenTech/TREX
+    about: |
+      This template is for issues within TREX network and specific features.
