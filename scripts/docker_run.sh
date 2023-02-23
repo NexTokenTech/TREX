@@ -6,5 +6,6 @@ echo "*** Start TREX node ***"
 
 cd $(dirname ${BASH_SOURCE[0]})/..
 
-docker-compose down --remove-orphans
-docker-compose run --rm --service-ports dev $@
+# migrate from earlier docker-compose Python program to Go-based docker/compose
+docker compose down --remove-orphans
+docker compose run --rm --service-ports dev $@
