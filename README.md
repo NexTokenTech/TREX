@@ -216,29 +216,56 @@ from off-chain workers.
 and hold corresponding keys in the enclave.
 - Errors: When sending TREX data fails, it returns an error.
 
-### Run in Docker
-
+### Build Docker Image
 First, install [Docker](https://docs.docker.com/get-docker/) and
 [Docker Compose](https://docs.docker.com/compose/install/).
+You may build docker images for deployments and test.
+Run the following command to build a docker image for deployment.
+```bash
+docker build -t trex-node:latest .
+```
+
+For supporting integration tests in non-sgx environment with keyholder nodes, you may use the following 
+command to build the test image. The corresponding keyholder nodes may run in software-simulated 
+SGX mode, thus, the IAS check need to be skipped.
+```shell
+docker build --build-arg FEATURES="skip-ias-check" -t trex-node:test .
+```
+
+### Run in Docker
+
+You may pull the latest image from a public container registry instead of building it by yourself.
+Use the following command to pull a pre-built image.
+For deployment:
+```shell
+docker pull trexnode.azurecr.io/trex-node:latest
+```
+For integration test:
+```shell
+docker pull trexnode.azurecr.io/trex-node:test
+```
+Remember to sign out with `docker logout` from your existing login credentials if you have errors.
 
 Then run the following command to start a single node development chain.
-
 ```bash
 ./scripts/docker_run.sh
 ```
 
-This command will firstly compile your code, and then start a local development network. You can
-also replace the default command
-(`cargo build --release && ./target/release/trex --dev --ws-external`)
-by appending your own. A few useful ones are as follows.
+This command will use the pre-compiled executable in the image, and then start a local development network. 
+By default, it supports external WebSocket connection (for key-holder connections) and external RPC methods 
+(for user queries). 
+
+You can also replace the default command
+(`--dev --ws-external --rpc-cors all --rpc-methods=unsafe --rpc-external`)
+by appending your own. Based on your application and deployment environments, you may turn off WebSocket or RPC supports 
+for enhanced safety.
+
+A few useful ones are as follows.
 
 ```bash
-# Run TREX node without re-compiling
-./scripts/docker_run.sh ./target/release/trex --dev --ws-external
+# Run TREX node without RPC supports
+./scripts/docker_run.sh --dev --ws-external
 
 # Purge the local dev chain
-./scripts/docker_run.sh ./target/release/trex purge-chain --dev
-
-# Check whether the code is compilable
-./scripts/docker_run.sh cargo check
+./scripts/docker_run.sh purge-chain --dev
 ```

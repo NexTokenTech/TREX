@@ -1,17 +1,19 @@
-version: "3.2"
+version: "3.3"
 
 services:
   dev:
     container_name: trex
-    image: paritytech/ci-linux:production
-    working_dir: /var/www/trex
+    image: trexnode.azurecr.io/trex-node:latest
+    working_dir: /rustbuilder
     ports:
+      - "9933:9933"
       - "9944:9944"
+      - "30333:30333"
     environment:
-      - CARGO_HOME=/var/www/trex/.cargo
+      - CARGO_HOME=/rustbuilder/.cargo
     volumes:
-      - .:/var/www/trex
+      - .:/data
       - type: bind
         source: ./.local
         target: /root/.local
-    command: bash -c "cargo build --release && ./target/release/trex --dev --ws-external"
+    command: --dev --ws-external --rpc-cors all --rpc-methods=unsafe --rpc-external

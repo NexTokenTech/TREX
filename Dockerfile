@@ -14,16 +14,11 @@
 # limitations under the License.
 
 # ===== START FIRST STAGE ======
-#FROM paritytech/ci-linux:974ba3ac-20201006 as builder
-#LABEL maintainer "kaisuki@qq.com"
-#LABEL description="trex builder."
-
-# ===== START FIRST STAGE ======
 FROM phusion/baseimage:jammy-1.0.0 as builder
 LABEL maintainer="team@trex.ink"
 LABEL description="trex builder."
 
-ARG FEATURES=""
+ARG FEATURES
 ARG PROFILE=release
 ARG STABLE=nightly
 WORKDIR /rustbuilder
@@ -44,8 +39,10 @@ RUN rustup update $STABLE --no-self-update
 
 # BUILD RUNTIME AND BINARY
 RUN rustup target add wasm32-unknown-unknown --toolchain $STABLE
-RUN cd /rustbuilder/trex && RUSTC_BOOTSTRAP=1 cargo +nightly build --$PROFILE --features $FEATURES --locked
-# ===== END FIRST STAGE ======
+RUN if [[ -z "$FEATURES" ]] ;  \
+        then cd /rustbuilder/trex && RUSTC_BOOTSTRAP=1 cargo +nightly build --$PROFILE --features $FEATURES --locked;  \
+        else cd /rustbuilder/trex && RUSTC_BOOTSTRAP=1 cargo +nightly build --$PROFILE --locked;  \
+    fi
 
 # ===== START SECOND STAGE ======
 FROM phusion/baseimage:jammy-1.0.0
@@ -66,8 +63,6 @@ RUN	rm -rf /usr/bin /usr/sbin
 # FINAL PREPARATIONS
 EXPOSE 30333 9933 9944
 VOLUME ["/data"]
-#CMD ["/usr/local/bin/trex"]
 WORKDIR /usr/local/bin
 ENTRYPOINT ["trex"]
-#CMD ["--chain=trex"]
 #===== END SECOND STAGE ======
