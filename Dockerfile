@@ -40,8 +40,8 @@ RUN rustup update $STABLE --no-self-update
 # BUILD RUNTIME AND BINARY
 RUN rustup target add wasm32-unknown-unknown --toolchain $STABLE
 RUN if [[ -z "$FEATURES" ]] ;  \
-        then cd /rustbuilder/trex && RUSTC_BOOTSTRAP=1 cargo +nightly build --$PROFILE --features $FEATURES --locked;  \
-        else cd /rustbuilder/trex && RUSTC_BOOTSTRAP=1 cargo +nightly build --$PROFILE --locked;  \
+        then cd /rustbuilder/trex && RUSTC_BOOTSTRAP=1 cargo +nightly build --$PROFILE --locked;  \
+        else cd /rustbuilder/trex && RUSTC_BOOTSTRAP=1 cargo +nightly build --$PROFILE --features $FEATURES --locked;  \
     fi
 
 # ===== START SECOND STAGE ======
