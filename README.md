@@ -58,7 +58,8 @@ If using a container to run the unit test and develop inside a container, you ma
 as [run in docker section](#run-in-docker).
 Once you have the image, assume the name of the image is `trex-node:prebuild`. You may run unittest inside the container.
 ```shell
-
+docker run -it trexnode.azurecr.io/trex-node:prebuild
+cd trex && cargo test
 ```
 
 ## Run
