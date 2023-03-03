@@ -16,35 +16,30 @@
 # under the License.
 
 FROM ubuntu:22.04
+LABEL maintainer="team@trex.ink"
+LABEL description="trex builder."
 
-ENV VERSION 2.18.101.1-jammy1
+ARG FEATURES
+ARG PROFILE=release
+ARG STABLE=nightly
+WORKDIR /rustbuilder
 
-ENV DEBIAN_FRONTEND=noninteractive
+# UPDATE RUST DEPENDENCIES
+ENV RUSTUP_HOME "/rustbuilder/.rustup"
+ENV CARGO_HOME "/rustbuilder/.cargo"
+ENV RUST_TOOLCHAIN nightly-2022-08-18
 
-ENV RUST_TOOLCHAIN nightly-2022-11-10
+# PREPARE OPERATING SYSTEM & BUILDING ENVIRONMENT
+RUN apt-get update && \
+	apt-get install -y pkg-config libssl-dev git clang libclang-dev diffutils gcc make m4 build-essential curl file cmake protobuf-compiler libprotobuf-dev
 
-# install SGX dependencies
-RUN apt-get update && apt-get install -q -y \
-    build-essential ocaml ocamlbuild automake autoconf libtool wget python-is-python3 libssl-dev \
-    libcurl4-openssl-dev \
-    libprotobuf-dev \
-    curl \
-    pkg-config \
-    git \
-    cmake \
-    llvm \
-    clang \
-    perl \
-    protobuf-compiler \
-    libprotobuf-dev
+RUN curl -sSf https://sh.rustup.rs | sh -s -- --default-toolchain none -y
+RUN . $CARGO_HOME/env
+ENV PATH "$PATH:/rustbuilder/.cargo/bin"
+RUN rustup default $RUST_TOOLCHAIN
+RUN rustup target add wasm32-unknown-unknown
+RUN cargo install wasm-gc
+RUN rm -rf /root/.cargo/registry && rm -rf /root/.cargo/git
 
-# install Rust and its dependencies
-
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y   && \
-    . $HOME/.cargo/env                                                        && \
-    rustup default $RUST_TOOLCHAIN                                            && \
-    rustup component add rust-src rls rust-analysis clippy rustfmt            && \
-    rustup target add wasm32-unknown-unknown                                  && \
-    cargo install wasm-gc                                                     && \
-    echo 'source $HOME/.cargo/env' >> ~/.bashrc                               && \
-    rm -rf /root/.cargo/registry && rm -rf /root/.cargo/git
+COPY . /rustbuilder/trex
+VOLUME ["/src"]

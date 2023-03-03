@@ -49,10 +49,16 @@ subcommands:
 ```sh
 ./target/release/trex -h
 ```
-## Test
+## Unit Test
 All core functions are covered by unit tests. To test the core functions, simply run
 ```shell
 cargo test
+```
+If using a container to run the unit test and develop inside a container, you may pull or build a prebuilt image 
+as [run in docker section](#run-in-docker).
+Once you have the image, assume the name of the image is `trex-node:prebuild`. You may run unittest inside the container.
+```shell
+
 ```
 
 ## Run
@@ -227,15 +233,22 @@ docker build -t trex-node:latest .
 
 For supporting integration tests in non-sgx environment with keyholder nodes, you may use the following 
 command to build the test image. The corresponding keyholder nodes may run in software-simulated 
-SGX mode, thus, the IAS check need to be skipped.
+SGX mode, thus, **the IAS check need to be skipped**. This image is only for integration test alongside the keyholder
+but not unit tests.
 ```shell
 docker build --build-arg FEATURES="skip-ias-check" -t trex-node:test .
+```
+
+For unit tests inside a container, we have another image tagged as "prebuild".
+```shell
+docker build -f docker/prebuild.Dockerfile -t trex-node:prebuild .
 ```
 
 ### Run in Docker
 
 You may pull the latest image from a public container registry instead of building it by yourself.
 Use the following command to pull a pre-built image.
+
 For deployment:
 ```shell
 docker pull trexnode.azurecr.io/trex-node:latest
@@ -243,6 +256,10 @@ docker pull trexnode.azurecr.io/trex-node:latest
 For integration test:
 ```shell
 docker pull trexnode.azurecr.io/trex-node:test
+```
+For unit test:
+```shell
+docker pull trexnode.azurecr.io/trex-node:prebuild
 ```
 Remember to sign out with `docker logout` from your existing login credentials if you have errors.
 
